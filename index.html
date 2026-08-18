@@ -127,7 +127,6 @@
       gap: 10px; width: 100%; 
     }
 
-    /* 2. CARDS DO INDEX E OCOC (+15% DE IMAGEM) */
     .card {
       width: 100% !important; height: 172px !important; background: #ffffff !important;
       border-radius: 8px !important; overflow: hidden !important; display: flex !important;
@@ -142,12 +141,10 @@
     .card-bar-title { font-size: 0.65rem !important; font-weight: 700 !important; color: #ffffff !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
     .card-bar-details { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
     .card-bar-country { display: flex !important; align-items: center !important; gap: 3px !important; font-size: 0.55rem !important; color: #ffffff !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    /* 3. ESTILO DAS BANDEIRAS NOS CARDS */
     .card-bar-flag { width: 13px !important; height: 8px !important; object-fit: cover !important; border-radius: 2px !important; flex-shrink: 0 !important; }
     .card-bar-vol { background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important; padding: 1px 3px !important; border-radius: 3px !important; font-size: 0.50rem !important; flex-shrink: 0; }
 
-    /* 1. CONFIGURAÇÃO SETS (+30% IMAGEM / BARRA MENOR) */
+    /* CONFIGURAÇÃO SETS */
     .card-row.sets-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .card-row.sets-grid .card { height: 148px !important; }
     .card-row.sets-grid .card-top-photo { height: 110px !important; }
@@ -155,27 +152,17 @@
     .card-row.sets-grid .card-bar-title { font-size: 0.60rem !important; line-height: 1.1 !important; }
     .card-row.sets-grid .card-bar-country { font-size: 0.50rem !important; }
 
-    /* MODAL ZOOM COM NAVEGAÇÃO */
-    .zoom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 3000; display: none; justify-content: center; align-items: center; padding: 10px; }
+    /* MODAL ZOOM (SEM SETAS, APENAS TOUCH E PINCH-TO-ZOOM) */
+    .zoom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 3000; display: none; justify-content: center; align-items: center; padding: 10px; overflow: hidden; touch-action: none; }
     .zoom-modal.active { display: flex; }
-    .zoom-modal img { max-width: 90vw; max-height: 85vh; object-fit: contain; }
-
-    .zoom-nav-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #f39c12;
-      font-size: 2rem;
-      font-weight: bold;
-      padding: 10px 14px;
-      cursor: pointer;
-      user-select: none;
-      z-index: 3100;
-      background: rgba(0,0,0,0.4);
-      border-radius: 50%;
+    .zoom-modal img { 
+      max-width: 90vw; max-height: 85vh; object-fit: contain; 
+      transition: transform 0.1s ease-out; transform-origin: center center;
     }
-    .zoom-prev { left: 10px; }
-    .zoom-next { right: 10px; }
+    
+    .zoom-close-btn {
+      position: absolute; top: 16px; right: 20px; color: #f39c12; font-size: 1.8rem; font-weight: bold; z-index: 3100; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -245,11 +232,10 @@
     </main>
   </div>
 
-  <!-- MODAL ZOOM COM NAVEGAÇÃO E TOUCH SWIPE -->
-  <div class="zoom-modal" id="zoomModal" onclick="closeZoomModal()">
-    <span class="zoom-nav-btn zoom-prev" onclick="event.stopPropagation(); navigateZoom(-1);">&#10094;</span>
-    <img id="zoomImage" src="" onclick="event.stopPropagation();">
-    <span class="zoom-nav-btn zoom-next" onclick="event.stopPropagation(); navigateZoom(1);">&#10095;</span>
+  <!-- MODAL ZOOM TOTALMENTE TOUCH (SEM SETAS VISÍVEIS) -->
+  <div class="zoom-modal" id="zoomModal">
+    <span class="zoom-close-btn" onclick="closeZoomModal()">&times;</span>
+    <img id="zoomImage" src="">
   </div>
 
 <script>
@@ -261,9 +247,6 @@
   let sortNewestFirst = true;
   let currentTab = 'home';
   let activeIndex = 0;
-
-  let touchZoomStartX = 0;
-  let touchZoomEndX = 0;
 
   function fixDriveUrl(url) {
     if (!url) return '';
@@ -283,7 +266,6 @@
     return String(str).toLowerCase().trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
-  /* 3. FUNÇÃO DE OBTENÇÃO DA BANDEIRA POR PAÍS */
   function getFlagUrlByCountry(countryName) {
     if (!countryName) return '';
     const name = String(countryName)
@@ -585,10 +567,19 @@
     });
   }
 
-  /* NAVEGAÇÃO E GESTOS NO LIGHTBOX */
+  /* NAVEGAÇÃO TOUCH E PINCH-TO-ZOOM NO LIGHTBOX */
+  let zoomScale = 1;
+  let startDistance = 0;
+  let initialScale = 1;
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let isZooming = false;
+  let lastTapTime = 0;
+
   function openZoomModal(index) {
     if (!zoomGallery || zoomGallery.length === 0) return;
     currentZoomIndex = index;
+    resetZoom();
     updateZoomImage();
     document.getElementById("zoomModal").classList.add("active");
   }
@@ -600,38 +591,81 @@
     }
   }
 
+  function resetZoom() {
+    zoomScale = 1;
+    const imgElem = document.getElementById("zoomImage");
+    if (imgElem) imgElem.style.transform = `scale(1)`;
+  }
+
   function navigateZoom(direction) {
     if (!zoomGallery || zoomGallery.length === 0) return;
     currentZoomIndex = (currentZoomIndex + direction + zoomGallery.length) % zoomGallery.length;
+    resetZoom();
     updateZoomImage();
   }
 
   function closeZoomModal() {
+    resetZoom();
     document.getElementById("zoomModal").classList.remove("active");
   }
 
-  /* DETECÇÃO DE SWIPE COM O DEDO NO LIGHTBOX */
   const zoomModalElem = document.getElementById("zoomModal");
+  const zoomImgElem = document.getElementById("zoomImage");
+
   if (zoomModalElem) {
     zoomModalElem.addEventListener("touchstart", (e) => {
-      touchZoomStartX = e.changedTouches[0].screenX;
+      if (e.touches.length === 2) {
+        /* INÍCIO DO GESTO DE PINÇA (ZOOM) */
+        isZooming = true;
+        startDistance = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        initialScale = zoomScale;
+      } else if (e.touches.length === 1) {
+        isZooming = false;
+        touchStartX = e.touches[0].screenX;
+      }
+    }, { passive: true });
+
+    zoomModalElem.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2 && isZooming) {
+        /* APLICANDO ZOOM COM OS DOIS DEDOS */
+        const currentDistance = Math.hypot(
+          e.touches[0].pageX - e.touches[1].pageX,
+          e.touches[0].pageY - e.touches[1].pageY
+        );
+        if (startDistance > 0) {
+          zoomScale = Math.min(Math.max(1, initialScale * (currentDistance / startDistance)), 3.5);
+          if (zoomImgElem) zoomImgElem.style.transform = `scale(${zoomScale})`;
+        }
+      }
     }, { passive: true });
 
     zoomModalElem.addEventListener("touchend", (e) => {
-      touchZoomEndX = e.changedTouches[0].screenX;
-      handleZoomSwipe();
+      if (e.touches.length === 0) {
+        if (!isZooming && zoomScale <= 1.05) {
+          /* DEDO ÚNICO: TROCA DE FOTO POR SWIPE */
+          touchEndX = e.changedTouches[0].screenX;
+          const diffX = touchEndX - touchStartX;
+          if (diffX < -40) navigateZoom(1);  /* Arrastou para a esquerda -> Próxima foto */
+          else if (diffX > 40) navigateZoom(-1); /* Arrastou para a direita -> Foto anterior */
+        }
+        
+        /* SUPORTE A DUPLO TOQUE PARA DAR/RESETAR ZOOM */
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+        if (tapLength < 300 && tapLength > 0) {
+          if (zoomScale > 1) {
+            resetZoom();
+          } else {
+            zoomScale = 2;
+            if (zoomImgElem) zoomImgElem.style.transform = `scale(2)`;
+          }
+        }
+        lastTapTime = currentTime;
+      }
     }, { passive: true });
-  }
-
-  function handleZoomSwipe() {
-    const diffX = touchZoomEndX - touchZoomStartX;
-    const threshold = 40;
-
-    if (diffX < -threshold) {
-      navigateZoom(1);  /* Arrastou para a esquerda -> Próxima foto */
-    } else if (diffX > threshold) {
-      navigateZoom(-1); /* Arrastou para a direita -> Foto anterior */
-    }
   }
 
   window.onload = fetchCatalogFromSheet;
