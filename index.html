@@ -50,7 +50,7 @@
     .mobile-menu-btn { background: transparent; color: #f39c12; border: none; font-size: 1.8rem; cursor: pointer; }
     .header-logo { height: 30px; width: auto; object-fit: contain; }
 
-    /* MENU GAVETA DESLIZANTE - ITENS MAIS PRÓXIMOS */
+    /* MENU GAVETA DESLIZANTE */
     .sidebar-drawer {
       position: fixed; top: 0; left: -280px; width: 260px; height: 100vh;
       background: rgba(22, 27, 38, 0.98); backdrop-filter: blur(10px);
@@ -63,7 +63,6 @@
     .drawer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1500; }
     .drawer-overlay.active { display: block; }
 
-    /* BOTÕES PRINCIPAIS DO MENU */
     .cat-btn {
       display: flex; align-items: center; width: 100%; padding: 8px 12px; border-radius: 8px;
       background: transparent; color: #e2e8f0; font-size: 0.85rem; font-weight: 600; border: none;
@@ -74,7 +73,6 @@
     .inline-panel-container { display: none; flex-direction: column; gap: 2px; padding: 2px 0; max-height: 220px; overflow-y: auto; }
     .inline-panel-container.active { display: flex; }
 
-    /* BOTÕES DE MARCAS DENTRO DO SUBMENU */
     .brand-btn { 
       font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; background: transparent; color: #a0aec0; 
       border: none; text-align: left; font-weight: 600; text-transform: uppercase; white-space: nowrap; 
@@ -136,10 +134,10 @@
     }
     .card.focused { border-color: #f39c12 !important; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5) !important; }
 
-    /* CONFIGURAÇÃO SETS */
+    /* CONFIGURAÇÃO SETS (+20% MAIS ALTO) */
     .card-row.sets-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .card-row.sets-grid .card { height: 110px !important; }
-    .card-row.sets-grid .card-top-photo { height: 70px !important; }
+    .card-row.sets-grid .card { height: 132px !important; }
+    .card-row.sets-grid .card-top-photo { height: 85px !important; }
 
     .card-top-photo { width: 100% !important; height: 110px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
     .card-top-photo img { max-width: 100% !important; max-height: 100% !important; object-fit: contain !important; }
