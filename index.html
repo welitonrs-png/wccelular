@@ -127,26 +127,33 @@
       gap: 10px; width: 100%; 
     }
 
+    /* 2. CARDS DO INDEX E OCOC (+15% DE IMAGEM) */
     .card {
-      width: 100% !important; height: 155px !important; background: #ffffff !important;
+      width: 100% !important; height: 172px !important; background: #ffffff !important;
       border-radius: 8px !important; overflow: hidden !important; display: flex !important;
       flex-direction: column !important; border: 2px solid transparent !important; cursor: pointer !important;
     }
     .card.focused { border-color: #f39c12 !important; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5) !important; }
 
-    /* CONFIGURAÇÃO SETS (+20% MAIS ALTO) */
-    .card-row.sets-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .card-row.sets-grid .card { height: 132px !important; }
-    .card-row.sets-grid .card-top-photo { height: 85px !important; }
-
-    .card-top-photo { width: 100% !important; height: 110px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
+    .card-top-photo { width: 100% !important; height: 128px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
     .card-top-photo img { max-width: 100% !important; max-height: 100% !important; object-fit: contain !important; }
 
-    .card-bottom-bar { width: 100% !important; height: 45px !important; padding: 2px 4px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
+    .card-bottom-bar { width: 100% !important; height: 44px !important; padding: 2px 4px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
     .card-bar-title { font-size: 0.65rem !important; font-weight: 700 !important; color: #ffffff !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
     .card-bar-details { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
-    .card-bar-country { display: flex !important; align-items: center !important; gap: 2px !important; font-size: 0.55rem !important; color: #ffffff !important; }
-    .card-bar-vol { background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important; padding: 1px 3px !important; border-radius: 3px !important; font-size: 0.50rem !important; }
+    .card-bar-country { display: flex !important; align-items: center !important; gap: 3px !important; font-size: 0.55rem !important; color: #ffffff !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    /* 3. ESTILO DAS BANDEIRAS NOS CARDS */
+    .card-bar-flag { width: 13px !important; height: 8px !important; object-fit: cover !important; border-radius: 2px !important; flex-shrink: 0 !important; }
+    .card-bar-vol { background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important; padding: 1px 3px !important; border-radius: 3px !important; font-size: 0.50rem !important; flex-shrink: 0; }
+
+    /* 1. CONFIGURAÇÃO SETS (+30% IMAGEM / BARRA MENOR) */
+    .card-row.sets-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .card-row.sets-grid .card { height: 148px !important; }
+    .card-row.sets-grid .card-top-photo { height: 110px !important; }
+    .card-row.sets-grid .card-bottom-bar { height: 38px !important; padding: 1px 4px !important; }
+    .card-row.sets-grid .card-bar-title { font-size: 0.60rem !important; line-height: 1.1 !important; }
+    .card-row.sets-grid .card-bar-country { font-size: 0.50rem !important; }
 
     /* MODAL ZOOM COM NAVEGAÇÃO */
     .zoom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 3000; display: none; justify-content: center; align-items: center; padding: 10px; }
@@ -274,6 +281,72 @@
   function formatCapitalizedText(str) {
     if (!str) return '';
     return String(str).toLowerCase().trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  /* 3. FUNÇÃO DE OBTENÇÃO DA BANDEIRA POR PAÍS */
+  function getFlagUrlByCountry(countryName) {
+    if (!countryName) return '';
+    const name = String(countryName)
+      .toLowerCase()
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    
+    const countryCodes = {
+      'brasil': 'br', 'brazil': 'br', 'argentina': 'ar', 'bolivia': 'bo', 'chile': 'cl', 
+      'colombia': 'co', 'equador': 'ec', 'ecuador': 'ec', 'guiana': 'gy', 'gyana': 'gy',
+      'guiana francesa': 'gf', 'paraguai': 'py', 'paraguay': 'py', 'peru': 'pe', 
+      'suriname': 'sr', 'uruguai': 'uy', 'uruguay': 'uy', 'venezuela': 've',
+      'antigua e barbuda': 'ag', 'bahamas': 'bs', 'barbados': 'bb', 'belize': 'bz', 
+      'canada': 'ca', 'costa rica': 'cr', 'cuba': 'cu', 'dominica': 'dm', 'el salvador': 'sv', 
+      'estados unidos': 'us', 'eua': 'us', 'usa': 'us', 'granada': 'gd', 'guatemala': 'gt', 
+      'haiti': 'ht', 'honduras': 'hn', 'jamaica': 'jm', 'mexico': 'mx', 'nicaragua': 'ni', 
+      'panama': 'pa', 'porto rico': 'pr', 'republica dominicana': 'do', 
+      'sao cristovao e nevis': 'kn', 'sao vicente e granadinas': 'vc', 'santa lucia': 'lc', 
+      'trinidad e tobago': 'tt', 'albania': 'al', 'alemanha': 'de', 'germany': 'de', 'andorra': 'ad', 'armenia': 'am', 
+      'austria': 'at', 'azerbaijao': 'az', 'belgica': 'be', 'bielorrussia': 'by', 
+      'bosnia e herzegovina': 'ba', 'bulgaria': 'bg', 'chipre': 'cy', 'croacia': 'hr', 
+      'dinamarca': 'dk', 'eslovaquia': 'sk', 'eslovenia': 'si', 'espanha': 'es', 
+      'estonia': 'ee', 'finlandia': 'fi', 'franca': 'fr', 'france': 'fr', 'georgia': 'ge', 
+      'grecia': 'gr', 'holanda': 'nl', 'paises baixos': 'nl', 'netherlands': 'nl', 
+      'hungria': 'hu', 'irlanda': 'ie', 'islandia': 'is', 'italia': 'it', 'kosovo': 'xk', 
+      'letonia': 'lv', 'liechtenstein': 'li', 'lituania': 'lt', 'luxemburgo': 'lu', 
+      'macedonia do norte': 'mk', 'malta': 'mt', 'moldavia': 'md', 'monaco': 'mc', 
+      'montenegro': 'me', 'noruega': 'no', 'polonia': 'pl', 'portugal': 'pt', 
+      'reino unido': 'gb', 'uk': 'gb', 'inglaterra': 'gb', 'escocia': 'gb', 'paises de gales': 'gb', 
+      'republica tcheca': 'cz', 'tchequia': 'cz', 'romenia': 'ro', 'russia': 'ru', 
+      'san marino': 'sm', 'servia': 'rs', 'suecia': 'se', 'suica': 'ch', 'turquia': 'tr', 
+      'ucrania': 'ua', 'vaticano': 'va', 'afeganistao': 'af', 'arabia saudita': 'sa', 'bangladesh': 'bd', 'bahrein': 'bh', 
+      'brunei': 'bn', 'butao': 'bt', 'camboja': 'kh', 'catar': 'qa', 'qatar': 'qa', 
+      'cazaquistao': 'kz', 'china': 'cn', 'coreia do norte': 'kp', 'coreia do sul': 'kr', 
+      'emirados arabes unidos': 'ae', 'eau': 'ae', 'filipinas': 'ph', 'iemen': 'ye', 
+      'india': 'in', 'indonesia': 'id', 'iraque': 'iq', 'ira': 'ir', 'israel': 'il', 
+      'japao': 'jp', 'japan': 'jp', 'jordania': 'jo', 'kuwait': 'kw', 'laos': 'la', 
+      'libano': 'lb', 'malasia': 'my', 'maldivas': 'mv', 'mianmar': 'mm', 'mongolia': 'mn', 
+      'nepal': 'np', 'oman': 'om', 'paquistao': 'pk', 'quirguistao': 'kg', 'singapura': 'sg', 
+      'siria': 'sy', 'sri lanka': 'lk', 'tailandia': 'th', 'taiwan': 'tw', 'tajiquistao': 'tj', 
+      'timor leste': 'tl', 'turcomenistao': 'tm', 'uzbequistao': 'uz', 'vietna': 'vn',
+      'africa do sul': 'za', 'angola': 'ao', 'algeria': 'dz', 'benin': 'bj', 'botsuana': 'bw', 
+      'burkina faso': 'bf', 'burundi': 'bi', 'cabo verde': 'cv', 'camaroes': 'cm', 
+      'chade': 'td', 'comores': 'km', 'congo': 'cg', 'costa do marfim': 'ci', 'djibout': 'dj', 
+      'egito': 'eg', 'eritreia': 'er', 'esuatini': 'sz', 'suazilandia': 'sz', 'etiopia': 'et', 
+      'gabao': 'ga', 'gambia': 'gm', 'gana': 'gh', 'guine': 'gn', 'guine bissau': 'gw', 
+      'guine equatorial': 'gq', 'ilha mauricio': 'mu', 'lesoto': 'ls', 'liberia': 'lr', 
+      'libia': 'ly', 'madagascar': 'mg', 'malawi': 'mw', 'mali': 'ml', 'marrocos': 'ma', 
+      'mauritania': 'mr', 'mocambique': 'mz', 'namibia': 'na', 'niger': 'ne', 'nigeria': 'ng', 
+      'quenia': 'ke', 'republica centro africana': 'cf', 'republica democratica do congo': 'cd', 
+      'ruanda': 'rw', 'sao tome e principe': 'st', 'senegal': 'sn', 'serra leoa': 'sl', 
+      'seichelas': 'sc', 'somalia': 'so', 'sudao': 'sd', 'sudao do sul': 'ss', 
+      'tanzania': 'tz', 'togo': 'tg', 'tunisia': 'tn', 'uganda': 'ug', 'zambia': 'zm', 
+      'zimbabue': 'zw', 'australia': 'au', 'fiji': 'fj', 'ilhas marechal': 'mh', 'ilhas salomao': 'sb', 
+      'kiribati': 'ki', 'micronesia': 'fm', 'nauru': 'nr', 'nova zelandia': 'nz', 
+      'palau': 'pw', 'papua nova guine': 'pg', 'samoa': 'ws', 'tonga': 'to', 
+      'tuvalu': 'tv', 'vanuatu': 'vu'
+    };
+
+    const code = countryCodes[name];
+    if (code) return `https://flagcdn.com/w40/${code}.png`;
+    return '';
   }
 
   function hideLoadingScreen() {
@@ -487,7 +560,9 @@
     currentFiltered.forEach((can, index) => {
       const frontImg = getOptimizedImageUrl(can.ImgCover || can.cover || can.ImgFront, 300);
       const brandFormatted = formatCapitalizedText(can.brewery || can.Cervejaria || "Cerveja");
-      const countryFormatted = formatCapitalizedText(can.country || can.Pais || "");
+      const countryRaw = can.country || can.Pais || "";
+      const countryFormatted = formatCapitalizedText(countryRaw);
+      const flagUrl = getFlagUrlByCountry(countryRaw);
 
       const card = document.createElement("div");
       card.className = "card";
@@ -498,7 +573,10 @@
         <div class="card-bottom-bar" style="background-color: ${can.brandColor || '#008234'};">
           <div class="card-bar-title">${brandFormatted}</div>
           <div class="card-bar-details">
-            <div class="card-bar-country"><span>${countryFormatted}</span></div>
+            <div class="card-bar-country">
+              ${flagUrl ? `<img src="${flagUrl}" class="card-bar-flag" alt="${countryFormatted}">` : ''}
+              <span>${countryFormatted}</span>
+            </div>
             ${can.volume ? `<div class="card-bar-vol">${can.volume}</div>` : ''}
           </div>
         </div>
