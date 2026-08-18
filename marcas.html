@@ -2,17 +2,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WCCollection - Universal SPA (Marcas)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WCCollection - Marcas Mobile</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; outline: none; }
     
-    body { background-color: #282A2D; color: #DDDDDD; height: 100vh; overflow: hidden; display: flex; user-select: none; touch-action: pan-y; }
+    body { background-color: #282A2D; color: #DDDDDD; min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; user-select: none; }
 
-    ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-    * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-
-    .app-container { display: flex; width: 100vw; height: 100vh; overflow: hidden; position: relative; background-color: #282A2D; }
+    .app-container { display: flex; flex-direction: column; width: 100vw; min-height: 100vh; position: relative; background-color: #282A2D; }
 
     /* TELA DE CARREGAMENTO */
     .loading-screen {
@@ -21,294 +18,78 @@
       flex-direction: column; justify-content: center; align-items: center; gap: 20px;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
-
     .loading-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-    .loading-logo { width: 180px; height: auto; object-fit: contain; animation: pulse 1.5s infinite ease-in-out; }
-    .loading-text { color: #f39c12; font-size: 1.1rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
-
-    .spinner {
-      width: 40px; height: 40px;
-      border: 4px solid rgba(243, 156, 18, 0.2);
-      border-top: 4px solid #f39c12; border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+    .loading-logo { width: 140px; height: auto; object-fit: contain; }
+    .loading-text { color: #f39c12; font-size: 0.95rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    .spinner { width: 36px; height: 36px; border: 4px solid rgba(243, 156, 18, 0.2); border-top: 4px solid #f39c12; border-radius: 50%; animation: spin 1s linear infinite; }
 
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.05); opacity: 1; } }
 
-    .mobile-menu-btn {
-      display: none; position: fixed; top: 12px; left: 12px; z-index: 2000;
-      background: rgba(26, 32, 46, 0.9); color: #f39c12; border: 1px solid #f39c12;
-      font-size: 1.5rem; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    .mobile-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: rgba(22, 27, 38, 0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.08); position: sticky; top: 0; z-index: 1000;
     }
-
-    @media (max-width: 768px) {
-      .mobile-menu-btn { display: block; }
-    }
+    .mobile-menu-btn { background: transparent; color: #f39c12; border: none; font-size: 1.8rem; cursor: pointer; }
+    .header-logo { height: 32px; width: auto; object-fit: contain; }
 
     .sidebar-drawer {
-      position: absolute; top: 0; left: -280px; width: 260px; height: 100vh;
+      position: fixed; top: 0; left: -280px; width: 260px; height: 100vh;
       background: rgba(22, 27, 38, 0.98); backdrop-filter: blur(10px);
-      display: flex; flex-direction: column; padding: 30px 16px; gap: 8px;
-      z-index: 1000; border-right: 1px solid rgba(255,255,255,0.08);
+      display: flex; flex-direction: column; padding: 24px 16px; gap: 8px;
+      z-index: 2000; border-right: 1px solid rgba(255,255,255,0.08);
       transition: left 0.25s cubic-bezier(0.1, 0.9, 0.2, 1); overflow-y: auto;
-      box-shadow: 10px 0 30px rgba(0,0,0,0.6);
     }
-    
     .sidebar-drawer.open { left: 0; }
-    .sidebar-logo { width: 100%; height: 50px; object-fit: contain; margin-bottom: 16px; text-align: center; }
+    .drawer-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 1500; }
+    .drawer-overlay.active { display: block; }
 
     .cat-btn {
-      display: flex; align-items: center; width: 100%; padding: 12px 18px; border-radius: 12px;
-      background: transparent; color: #e2e8f0; font-size: 1.05rem; font-weight: 600; border: none;
-      text-align: left; cursor: pointer; transition: all 0.15s ease; text-transform: uppercase !important;
+      display: flex; align-items: center; width: 100%; padding: 12px 14px; border-radius: 10px;
+      background: transparent; color: #e2e8f0; font-size: 0.95rem; font-weight: 600; border: none;
+      text-align: left; cursor: pointer; text-transform: uppercase !important;
     }
 
-    .cat-btn:focus, .cat-btn.focused, .cat-btn:hover {
-      background: #ffffff !important; color: #1a1f2c !important; font-weight: 700 !important;
-      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2); outline: none !important;
-    }
+    .main-area { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; }
 
-    .inline-panel-container { display: none; flex-direction: column; gap: 4px; padding: 6px 0; }
-    .inline-panel-container.active { display: flex; }
-
-    .brand-btn { 
-      font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; background: transparent; color: #a0aec0; cursor: pointer; 
-      border: none !important; text-align: left; font-weight: 600; text-transform: uppercase !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .brand-btn:focus, .brand-btn:hover { color: #ffffff !important; background: rgba(255,255,255,0.1) !important; }
-
-    .menu-search-box { width: 100%; padding: 8px; background: #11141d; border: 1px solid #333d52; border-radius: 8px; color: #fff; font-size: 0.8rem; text-align: center; text-transform: uppercase; margin-bottom: 4px; pointer-events: none; }
-    
-    .vk-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
-    
-    .vk-key { 
-      background: #11141d; 
-      border: 1px solid #2a3447; 
-      color: #a0aec0; 
-      padding: 8px 0; 
-      border-radius: 6px; 
-      font-size: 0.85rem; 
-      font-weight: bold; 
-      cursor: pointer; 
-      text-align: center; 
-      user-select: none; 
-      transition: all 0.15s ease; 
-    }
-
-    .vk-key:focus, .vk-key.focused, .vk-key:hover { 
-      color: #1a1e29 !important; 
-      border-color: #f39c12 !important; 
-      background: #f39c12 !important; 
-      box-shadow: 0 0 10px rgba(243, 156, 18, 0.5) !important; 
-      outline: none !important;
-    }
-
-    .vk-key-wide { grid-column: span 2; }
-
-    /* ÁREA PRINCIPAL */
-  /* ÁREA PRINCIPAL: Removemos o padding do topo e das laterais */
-.main-area {
-      flex: 1; 
-      display: flex; 
-      flex-direction: column; 
-      height: 100vh; 
-      padding: 0 0 10px 0; 
-      gap: 6px;
-      overflow: hidden; 
-      background: transparent !important; /* Deixa o fundo transparecer */
-      min-width: 0; 
-      position: relative;
-      z-index: 2; /* Fica acima do wallpaper */
-      transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
-    }
-    .main-area.pushed { transform: translateX(260px); }
-
-  .hero-panel { 
-      flex: 1; 
-      min-height: 0; 
-      background: transparent !important; 
-      border-radius: 0; /* Zerado para encostar totalmente nos cantos */
-      display: flex; 
-      padding: 12px 16px; /* Ajuste interno para os elementos não grudarem na borda seca */
-      gap: 20px; 
-      align-items: center; 
-      position: relative;
-      overflow: hidden;
-    }
-
-/* WALLPAPER EM TELA CHEIA (SEM GRADIENTE INFERIOR) */
-    .hero-brand-wallpaper {
-      position: absolute; 
-      top: 0; 
-      left: 0; 
-      width: 100vw; 
-      height: 100vh;
-      background-size: cover; 
-      background-position: center; 
-      background-repeat: no-repeat;
-      opacity: 0; 
-      transition: opacity 0.5s ease-in-out; 
-      z-index: 1; 
-      pointer-events: none;
-
-      /* Mantém apenas a transição gradiente na esquerda */
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 20%, black 50%, black 100%);
-      mask-image: linear-gradient(to right, transparent 0%, transparent 20%, black 50%, black 100%);
-    }
-
-
-    .hero-brand-wallpaper.active { opacity: 0.6; }
-
-    .hero-panel::after {
-      content: none !important;
-    }
-
-    .brand-search-wrapper { position: relative; width: 380px; max-width: 80%; z-index: 500; }
-
+    /* CAMPO DE BUSCA DE MARCAS NO TOPO */
+    .brand-search-wrapper { width: 100%; margin-bottom: 8px; }
     .brand-search-input {
-      width: 100%; padding: 10px 16px; background: #11141d; border: 2px solid #333d52;
-      border-radius: 8px; color: #f39c12; font-size: 0.95rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px; transition: border-color 0.2s ease, box-shadow 0.2s ease; cursor: pointer;
+      width: 100%; padding: 12px 16px; background: #11141d; border: 2px solid #f39c12;
+      border-radius: 8px; color: #f39c12; font-size: 0.95rem; font-weight: 700; text-transform: uppercase;
     }
 
-    .brand-search-input:focus, .brand-search-input.focused {
-      border-color: #f39c12; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5); outline: none;
+    .counter-bar { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; }
+    .sort-icon-btn { background: transparent; color: #a0aec0; border: none; font-size: 1rem; cursor: pointer; }
+    .card-counter { font-size: 0.85rem; font-weight: 900; color: #e2e8f0; }
+
+    /* CATÁLOGO EM GRADE RESPONSIVA */
+    .catalog-section { width: 100%; }
+    .card-row { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+      gap: 10px; width: 100%; 
     }
-
-    .top-vk-panel {
-      display: none; position: absolute; top: calc(100% + 6px); left: 0;
-      width: 420px; max-width: 95vw; padding: 12px; background: rgba(22, 27, 38, 0.98);
-      border: 2px solid #f39c12; border-radius: 12px; box-shadow: 0 12px 35px rgba(0,0,0,0.95);
-      z-index: 2500; backdrop-filter: blur(12px);
-    }
-
-    .top-vk-panel.active { display: block; animation: fadeIn 0.2s ease-out; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .autocomplete-dropdown {
-      position: relative; width: 100%; max-height: 140px; background: #11141d;
-      border: 1px solid #333d52; border-radius: 6px; overflow-y: auto; display: none;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5); margin-top: 8px; z-index: 2600;
-    }
-
-    .autocomplete-dropdown.active { display: flex; flex-direction: column; }
-
-    .autocomplete-item {
-      padding: 8px 12px; font-size: 0.85rem; font-weight: 700; color: #a0aec0;
-      text-transform: uppercase; cursor: pointer; transition: background 0.15s ease, color 0.15s ease;
-    }
-
-    .autocomplete-item:hover, .autocomplete-item:focus, .autocomplete-item.active {
-      background: #f39c12; color: #1a1e29; outline: none;
-    }
-
-    .hero-brand-logo-container {
-      position: absolute; top: 8px; right: 20px; width: 180px; height: 80px;
-      display: flex; justify-content: flex-end; align-items: flex-start; z-index: 20; pointer-events: none;
-    }
-
-    .hero-brand-logo-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-    .counter-bar { display: flex; justify-content: flex-end; align-items: center; padding: 0 4px; gap: 8px; height: 20px; z-index: 10; }
-    
-    .sort-icon-btn {
-      background: transparent; color: #a0aec0; border: none; font-size: 0.9rem;
-      cursor: pointer; padding: 0; display: flex; align-items: center;
-      justify-content: center; transition: color 0.2s ease, transform 0.2s ease; outline: none;
-    }
-    
-    .sort-icon-btn:hover, .sort-icon-btn:focus, .sort-icon-btn.focused {
-      color: #f39c12 !important; background: transparent !important; border: none !important; box-shadow: none !important; transform: scale(1.25);
-    }
-
-   .card-counter { font-size: 0.85rem; font-weight: 900; color: #e2e8f0; background: transparent; padding: 0; letter-spacing: 1px; }
-
-    .catalog-section { height: 380px; min-height: 380px; width: 100%; overflow: hidden; flex-shrink: 0; touch-action: none; z-index: 5; }
-   /* SEÇÃO INFERIOR DO CATÁLOGO - MARCAS.HTML */
-.card-row { 
-  display: grid; 
-  grid-template-columns: repeat(7, 122px); 
-  grid-template-rows: repeat(2, 185px); 
-  gap: 10px 12px; 
-  width: fit-content; /* Faz a grade ter o tamanho exato dos 7 cards */
-  margin: 0 auto;     /* Centraliza o bloco inteiro de 7 colunas na tela */
-  justify-content: start; /* Garante que itens incompletos fiquem à esquerda */
-  align-content: start; 
-}
-
-
 
     .card {
-      width: 122px !important; min-width: 122px !important; height: 185px !important;
-      background: #ffffff !important; border-radius: 10px !important; overflow: hidden !important;
-      display: flex !important; flex-direction: column !important; border: 2px solid transparent !important;
-      cursor: pointer !important; flex-shrink: 0 !important; outline: none !important;
+      width: 100% !important; height: 160px !important; background: #ffffff !important;
+      border-radius: 8px !important; overflow: hidden !important; display: flex !important;
+      flex-direction: column !important; cursor: pointer !important;
     }
 
-    .card.card-aspect-sets { width: 170px !important; min-width: 170px !important; }
-
-    .card-top-photo {
-      width: 100% !important; height: 137px !important; background: #ffffff !important;
-      display: flex !important; justify-content: center !important; align-items: center !important; padding: 4px !important;
-    }
-
+    .card-top-photo { width: 100% !important; height: 115px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
     .card-top-photo img { max-width: 100% !important; max-height: 100% !important; object-fit: contain !important; }
 
-    .card-bottom-bar {
-      width: 100% !important; height: 48px !important; padding: 2px 5px 3px 5px !important;
-      display: flex !important; flex-direction: column !important; justify-content: space-between !important;
-      box-sizing: border-box !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    .card-bottom-bar { width: 100% !important; height: 45px !important; padding: 2px 4px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
+    .card-bar-title { font-size: 0.65rem !important; font-weight: 700 !important; color: #ffffff !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+    .card-bar-details { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
+    .card-bar-country { display: flex !important; align-items: center !important; gap: 2px !important; font-size: 0.55rem !important; color: #ffffff !important; }
+
+    @media (min-width: 560px) {
+      .card-row { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+      .card { height: 170px !important; }
+      .card-top-photo { height: 125px !important; }
     }
-
-    .card-bar-title {
-      font-family: "Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-      font-size: 0.75rem !important; font-weight: 700 !important; color: #ffffff !important;
-      white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
-      text-transform: capitalize !important; line-height: 1.1 !important; margin-top: 3px !important;
-    }
-
-    .card-bar-details { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; margin-bottom: 1px !important; }
-
-    .card-bar-country {
-      display: flex !important; align-items: center !important; gap: 3px !important;
-      font-family: Helvetica, Arial, sans-serif !important; font-size: 0.60rem !important;
-      font-weight: 400 !important; color: #ffffff !important; white-space: nowrap !important;
-      overflow: hidden !important; text-transform: capitalize !important;
-    }
-
-    .card-bar-flag { width: 13px !important; height: 8px !important; object-fit: cover !important; border-radius: 2px !important; flex-shrink: 0 !important; }
-
-    .card-bar-vol {
-      background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important;
-      font-family: Helvetica, Arial, sans-serif !important; padding: 1px 4px !important;
-      border-radius: 4px !important; font-size: 0.55rem !important; font-weight: 400 !important;
-      white-space: nowrap !important; flex-shrink: 0 !important;
-    }
-
-.card.focused, .card:focus, .card:hover { 
-  border: 2px solid #f39c12 !important; 
-  outline: none !important; 
-  z-index: 10 !important; 
-  transform: none !important; /* Garante que o card não mude de tamanho */
-
-}
-
-    .zoom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 3000; display: none; justify-content: center; align-items: center; padding: 16px; overflow: hidden; }
-    .zoom-modal.active { display: flex; }
-    .zoom-modal img { max-width: 85vw; max-height: 85vh; object-fit: contain; border-radius: 6px; cursor: pointer; transition: transform 0.15s ease-out; transform-origin: center center; }
-
-    .exit-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 4000; display: none; justify-content: center; align-items: center; }
-    .exit-modal.active { display: flex; }
-    .exit-box { background: #161b26; border: 2px solid #333d52; padding: 30px 40px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .exit-title { color: #f39c12; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-    .exit-buttons { display: flex; gap: 16px; }
-    .exit-btn { padding: 10px 24px; border-radius: 8px; font-weight: bold; font-size: 1rem; border: none; cursor: pointer; text-transform: uppercase; background: #2a3447; color: #a0aec0; transition: all 0.15s ease; }
-    .exit-btn:focus, .exit-btn:hover { background: #ffffff; color: #1a1f2c; box-shadow: 0 0 15px rgba(255,255,255,0.3); outline: none; }
   </style>
 </head>
 <body>
@@ -316,1270 +97,148 @@
   <div class="loading-screen" id="loadingScreen">
     <img src="logo.png" alt="Logo" class="loading-logo">
     <div class="spinner"></div>
-    <div class="loading-text" id="loadingText">CARREGANDO MARCAS...</div>
+    <div class="loading-text">CARREGANDO MARCAS...</div>
   </div>
 
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeMenu()"></div>
+
   <div class="app-container">
-    <div class="hero-brand-wallpaper" id="heroBrandWallpaper"></div>
-    <button class="mobile-menu-btn" onclick="toggleMenuMobile(event)">☰</button>
+    <header class="mobile-header">
+      <button class="mobile-menu-btn" onclick="toggleMenuMobile(event)">☰</button>
+      <img src="logo.png" alt="WCCollection" class="header-logo">
+      <div style="width: 24px;"></div>
+    </header>
 
     <nav class="sidebar-drawer" id="sidebarDrawer">
-      <img src="logo.png" alt="Logo" class="sidebar-logo">
-      
-      <button class="cat-btn" id="menuBtnHome" onclick="window.location.href='index.html'" tabindex="0">HOME / CATÁLOGO</button>
-      
-      <button class="cat-btn" id="menuBtnSearch" onclick="toggleSearchInline()" tabindex="0">PESQUISAR</button>
-      <div class="inline-panel-container" id="searchInlineContainer">
-        <input type="text" id="menuSearchInput" class="menu-search-box" placeholder="DIGITE PARA BUSCAR..." readonly tabindex="-1">
-        <div class="vk-container" id="vkContainer"></div>
-      </div>
-
-      <button class="cat-btn" id="menuBtnBrands" onclick="toggleBrandInline()" tabindex="0">MARCAS</button>
-      <div class="inline-panel-container" id="brandInlineList"></div>
-
-      <button class="cat-btn" id="menuBtnOcoc" onclick="switchTab('ococ')" tabindex="0">OCOC (PAÍSES)</button>
-      <button class="cat-btn" id="menuBtnSets" onclick="switchTab('sets')" tabindex="0">SETS & PACKS</button>
+      <button class="cat-btn" onclick="window.location.href='index.html'">HOME / CATÁLOGO</button>
+      <button class="cat-btn" onclick="switchTab('ococ')">OCOC (PAÍSES)</button>
+      <button class="cat-btn" onclick="switchTab('sets')">SETS & PACKS</button>
     </nav>
 
-    <main class="main-area" id="mainArea" onclick="handleMainAreaClick()">
-      <section class="hero-panel" id="heroPanel">
-               <div class="brand-search-wrapper" onclick="event.stopPropagation();">
-          <input type="text" id="topBrandInput" class="brand-search-input" placeholder="BUSCAR MARCA..." readonly tabindex="0">
-          
-          <div class="top-vk-panel" id="topVkPanel">
-            <div class="vk-container" id="topVkContainer"></div>
-            <div class="autocomplete-dropdown" id="brandAutocompleteList"></div>
-          </div>
-        </div>
-        
-        <div class="hero-brand-logo-container" id="heroBrandLogo"></div>
-      </section>
+    <main class="main-area">
+      <div class="brand-search-wrapper">
+        <input type="text" id="topBrandInput" class="brand-search-input" placeholder="BUSCAR MARCA..." oninput="filterCatalogByBrand(this.value)">
+      </div>
 
       <div class="counter-bar">
-        <button class="sort-icon-btn" id="sortOrderBtn" onclick="toggleSortOrder()" tabindex="0" title="Alternar Ordenação">▼</button>
+        <button class="sort-icon-btn" onclick="toggleSortOrder()">▼ ORDENAR</button>
         <div class="card-counter" id="cardCounter">0/0</div>
       </div>
 
-      <section class="catalog-section" id="catalogSection">
+      <section class="catalog-section">
         <div class="card-row" id="cardRow"></div>
       </section>
     </main>
   </div>
 
-  <div class="zoom-modal" id="zoomModal" onclick="closeZoomModal()">
-    <img id="zoomImage" src="" alt="Imagem ampliada" onclick="event.stopPropagation(); toggleZoomStep();">
-  </div>
-
-  <div class="exit-modal" id="exitModal">
-    <div class="exit-box">
-      <div class="exit-title">TEM CERTEZA QUE QUER SAIR?</div>
-      <div class="exit-buttons">
-        <button class="exit-btn" id="exitBtnNo" onclick="closeExitModal()">NÃO</button>
-        <button class="exit-btn" id="exitBtnYes" onclick="confirmExit()">SIM</button>
-      </div>
-    </div>
-  </div>
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbwP4kTpSrGJllmlWjQp1YmD1Th5jiw1oUtX5cAJAZj9txy-eNi6_EYyLPG_Q0_coyT9/exec";
   let canCatalog = [];
   let currentFiltered = [];
-  let zoomGallery = [];
-  let currentZoomIndex = 0;
   let sortNewestFirst = true;
-  
-  let currentTab = 'home';
-  let cardsPerRow = 7;
-  let cardsPerPage = 14;
-  let currentPage = 0;
-  let activeLocalIndex = 0;
-  let lastSelectedMenuId = 'menuBtnHome'; 
-  let lastSelectedBrandElem = null;
-
-  let registeredBrands = [];
-
-  let zoomLevel = 1.0; 
-  let zoomState = 0;   
-  let panX = 0;
-  let panY = 0;
-  const PAN_STEP = 60;
-
-  const vkKeys = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0','ESPAÇO','DEL','LIMPAR'];
 
   function fixDriveUrl(url) {
     if (!url) return '';
     const str = String(url).trim();
     const match = str.match(/\/d\/([^\/\?]+)/);
-    if (match && match[1]) {
-      return `https://lh3.googleusercontent.com/d/${match[1]}`;
-    }
-    return str;
+    return match && match[1] ? `https://lh3.googleusercontent.com/d/${match[1]}` : str;
   }
 
   function getOptimizedImageUrl(url, size = 300) {
     if (!url) return '';
     const cleanUrl = fixDriveUrl(url);
-    if (cleanUrl.includes('googleusercontent.com')) {
-      return cleanUrl.split('=')[0] + `=s${size}-rw`;
-    }
-    return cleanUrl;
+    return cleanUrl.includes('googleusercontent.com') ? cleanUrl.split('=')[0] + `=s${size}-rw` : cleanUrl;
   }
 
   function formatCapitalizedText(str) {
     if (!str) return '';
-    return String(str)
-      .toLowerCase()
-      .trim()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  }
-
-  function getFlagUrlByCountry(countryName) {
-    if (!countryName) return '';
-    const name = String(countryName)
-      .toLowerCase()
-      .trim()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-    
-    const countryCodes = {
-      'brasil': 'br', 'brazil': 'br', 'argentina': 'ar', 'bolivia': 'bo', 'chile': 'cl', 
-      'colombia': 'co', 'equador': 'ec', 'ecuador': 'ec', 'guiana': 'gy', 'gyana': 'gy',
-      'guiana francesa': 'gf', 'paraguai': 'py', 'paraguay': 'py', 'peru': 'pe', 
-      'suriname': 'sr', 'uruguai': 'uy', 'uruguay': 'uy', 'venezuela': 've',
-      'antigua e barbuda': 'ag', 'bahamas': 'bs', 'barbados': 'bb', 'belize': 'bz', 
-      'canada': 'ca', 'costa rica': 'cr', 'cuba': 'cu', 'dominica': 'dm', 'el salvador': 'sv', 
-      'estados unidos': 'us', 'eua': 'us', 'usa': 'us', 'granada': 'gd', 'guatemala': 'gt', 
-      'haiti': 'ht', 'honduras': 'hn', 'jamaica': 'jm', 'mexico': 'mx', 'nicaragua': 'ni', 
-      'panama': 'pa', 'porto rico': 'pr', 'republica dominicana': 'do', 
-      'sao cristovao e nevis': 'kn', 'sao vicente e granadinas': 'vc', 'santa lucia': 'lc', 
-      'trinidad e tobago': 'tt', 'albania': 'al', 'alemanha': 'de', 'germany': 'de', 'andorra': 'ad', 'armenia': 'am', 
-      'austria': 'at', 'azerbaijao': 'az', 'belgica': 'be', 'bielorrussia': 'by', 
-      'bosnia e herzegovina': 'ba', 'bulgaria': 'bg', 'chipre': 'cy', 'croacia': 'hr', 
-      'dinamarca': 'dk', 'eslovaquia': 'sk', 'eslovenia': 'si', 'espanha': 'es', 
-      'estonia': 'ee', 'finlandia': 'fi', 'franca': 'fr', 'france': 'fr', 'georgia': 'ge', 
-      'grecia': 'gr', 'holanda': 'nl', 'paises baixos': 'nl', 'netherlands': 'nl', 
-      'hungria': 'hu', 'irlanda': 'ie', 'islandia': 'is', 'italia': 'it', 'kosovo': 'xk', 
-      'letonia': 'lv', 'liechtenstein': 'li', 'lituania': 'lt', 'luxemburgo': 'lu', 
-      'macedonia do norte': 'mk', 'malta': 'mt', 'moldavia': 'md', 'monaco': 'mc', 
-      'montenegro': 'me', 'noruega': 'no', 'polonia': 'pl', 'portugal': 'pt', 
-      'reino unido': 'gb', 'uk': 'gb', 'inglaterra': 'gb', 'escocia': 'gb', 'paises de gales': 'gb', 
-      'republica tcheca': 'cz', 'tchequia': 'cz', 'romenia': 'ro', 'russia': 'ru', 
-      'san marino': 'sm', 'servia': 'rs', 'suecia': 'se', 'suica': 'ch', 'turquia': 'tr', 
-      'ucrania': 'ua', 'vaticano': 'va', 'afeganistao': 'af', 'arabia saudita': 'sa', 'bangladesh': 'bd', 'bahrein': 'bh', 
-      'brunei': 'bn', 'butao': 'bt', 'camboja': 'kh', 'catar': 'qa', 'qatar': 'qa', 
-      'cazaquistao': 'kz', 'china': 'cn', 'coreia do norte': 'kp', 'coreia do sul': 'kr', 
-      'emirados arabes unidos': 'ae', 'eau': 'ae', 'filipinas': 'ph', 'iemen': 'ye', 
-      'india': 'in', 'indonesia': 'id', 'iraque': 'iq', 'ira': 'ir', 'israel': 'il', 
-      'japao': 'jp', 'japan': 'jp', 'jordania': 'jo', 'kuwait': 'kw', 'laos': 'la', 
-      'libano': 'lb', 'malasia': 'my', 'maldivas': 'mv', 'mianmar': 'mm', 'mongolia': 'mn', 
-      'nepal': 'np', 'oman': 'om', 'paquistao': 'pk', 'quirguistao': 'kg', 'singapura': 'sg', 
-      'siria': 'sy', 'sri lanka': 'lk', 'tailandia': 'th', 'taiwan': 'tw', 'tajiquistao': 'tj', 
-      'timor leste': 'tl', 'turcomenistao': 'tm', 'uzbequistao': 'uz', 'vietna': 'vn',
-      'africa do sul': 'za', 'angola': 'ao', 'algeria': 'dz', 'benin': 'bj', 'botsuana': 'bw', 
-      'burkina faso': 'bf', 'burundi': 'bi', 'cabo verde': 'cv', 'camaroes': 'cm', 
-      'chade': 'td', 'comores': 'km', 'congo': 'cg', 'costa do marfim': 'ci', 'djibout': 'dj', 
-      'egito': 'eg', 'eritreia': 'er', 'esuatini': 'sz', 'suazilandia': 'sz', 'etiopia': 'et', 
-      'gabao': 'ga', 'gambia': 'gm', 'gana': 'gh', 'guine': 'gn', 'guine bissau': 'gw', 
-      'guine equatorial': 'gq', 'ilha mauricio': 'mu', 'lesoto': 'ls', 'liberia': 'lr', 
-      'libia': 'ly', 'madagascar': 'mg', 'malawi': 'mw', 'mali': 'ml', 'marrocos': 'ma', 
-      'mauritania': 'mr', 'mocambique': 'mz', 'namibia': 'na', 'niger': 'ne', 'nigeria': 'ng', 
-      'quenia': 'ke', 'republica centro africana': 'cf', 'republica democratica do congo': 'cd', 
-      'ruanda': 'rw', 'sao tome e principe': 'st', 'senegal': 'sn', 'serra leoa': 'sl', 
-      'seichelas': 'sc', 'somalia': 'so', 'sudao': 'sd', 'sudao do sul': 'ss', 
-      'tanzania': 'tz', 'togo': 'tg', 'tunisia': 'tn', 'uganda': 'ug', 'zambia': 'zm', 
-      'zimbabue': 'zw', 'australia': 'au', 'fiji': 'fj', 'ilhas marechal': 'mh', 'ilhas salomao': 'sb', 
-      'kiribati': 'ki', 'micronesia': 'fm', 'nauru': 'nr', 'nova zelandia': 'nz', 
-      'palau': 'pw', 'papua nova guine': 'pg', 'samoa': 'ws', 'tonga': 'to', 
-      'tuvalu': 'tv', 'vanuatu': 'vu'
-    };
-
-    const code = countryCodes[name];
-    if (code) return `https://flagcdn.com/w40/${code}.png`;
-    return '';
+    return String(str).toLowerCase().trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
   function hideLoadingScreen() {
     const screen = document.getElementById("loadingScreen");
-    if (screen) {
-      screen.classList.add("hidden");
-    }
+    if (screen) screen.classList.add("hidden");
   }
 
   async function fetchCatalogFromSheet() {
-    if (!API_URL || API_URL.includes("COLE_AQUI")) return;
-
     const cachedData = localStorage.getItem("beercan_catalog_cache");
     if (cachedData) {
       try {
         canCatalog = JSON.parse(cachedData);
-        extractRegisteredBrands();
-        processTabChange();
+        filterCatalogByBrand("");
         hideLoadingScreen();
-        focusCardSafely(0);
-      } catch (e) {
-        console.error("Erro ao ler cache local:", e);
-      }
+      } catch (e) {}
     }
 
     try {
       const response = await fetch(API_URL);
       const freshData = await response.json();
-
       if (Array.isArray(freshData) && freshData.length > 0) {
         canCatalog = freshData;
         localStorage.setItem("beercan_catalog_cache", JSON.stringify(freshData));
-        extractRegisteredBrands();
-        processTabChange();
+        filterCatalogByBrand("");
         hideLoadingScreen();
-        if (!cachedData) focusCardSafely(0);
       }
     } catch (err) {
-      console.error("Erro na atualização remota:", err);
       hideLoadingScreen();
-      if (!cachedData) focusCardSafely(0);
     }
-  }
-
-  function extractRegisteredBrands() {
-    const brandSet = new Set();
-    canCatalog.forEach(can => {
-      const b = can.brewery || can.Cervejaria;
-      if (b && String(b).trim() !== "") {
-        brandSet.add(String(b).trim());
-      }
-    });
-    registeredBrands = Array.from(brandSet).sort((a, b) => a.localeCompare(b));
-  }
-
-  function switchTab(tabName) {
-    currentTab = tabName;
-    lastSelectedBrandElem = null;
-    
-    if(tabName === 'home') lastSelectedMenuId = 'menuBtnHome';
-    else if(tabName === 'ococ') lastSelectedMenuId = 'menuBtnOcoc';
-    else if(tabName === 'sets') lastSelectedMenuId = 'menuBtnSets';
-
-    const searchInput = document.getElementById("menuSearchInput");
-    if (searchInput) searchInput.value = "";
-
-    const searchContainer = document.getElementById("searchInlineContainer");
-    if (searchContainer) searchContainer.classList.remove("active");
-
-    const brandList = document.getElementById("brandInlineList");
-    if (brandList) brandList.classList.remove("active");
-    
-    processTabChange();
-    focusCardSafely(0);
-  }
-
-  function toggleSortOrder() {
-    sortNewestFirst = !sortNewestFirst;
-    const sortBtn = document.getElementById("sortOrderBtn");
-    if (sortBtn) {
-      if (sortNewestFirst) {
-        sortBtn.innerText = "▼";
-        sortBtn.title = "Ordenação: Maior para Menor (Mais Novos)";
-      } else {
-        sortBtn.innerText = "▲";
-        sortBtn.title = "Ordenação: Menor para Maior (Mais Antigos)";
-      }
-    }
-
-    const inputElem = document.getElementById("topBrandInput");
-    const currentSearchVal = inputElem ? inputElem.value : "";
-    filterCatalogByBrand(currentSearchVal);
-    focusCardSafely(0);
-  }
-
-  function processTabChange() {
-    buildBrandList();
-    buildVirtualKeyboard();
-    buildTopVirtualKeyboard();
-    const inputElem = document.getElementById("topBrandInput");
-    const currentSearchVal = inputElem ? inputElem.value : "";
-    filterCatalogByBrand(currentSearchVal);
-  }
-
-  function getBaseListForCurrentTab() {
-    let list = [];
-    if (currentTab === 'home') {
-      list = canCatalog.filter(can => {
-        const val = can.isSet !== undefined ? can.isSet : can.isSet;
-        return !val || String(val).toLowerCase() === "false";
-      });
-    } else if (currentTab === 'ococ') {
-      const ococMap = new Map();
-      canCatalog.forEach(can => {
-        const brandVal = String(can.brewery || can.Cervejaria || "").toLowerCase().trim();
-        const countryVal = String(can.country || can.Pais || "").toLowerCase().trim();
-        const isOcocVal = can.isOcoc;
-        const isSetVal = can.isSet;
-
-        const uniqueKey = `${brandVal}_${countryVal}`;
-
-        if ((!isSetVal || String(isSetVal).toLowerCase() === "false") && 
-            (isOcocVal === true || String(isOcocVal).toLowerCase() === "true") && 
-            brandVal && countryVal && !ococMap.has(uniqueKey)) {
-          ococMap.set(uniqueKey, can);
-        }
-      });
-      list = Array.from(ococMap.values()).sort((a,b) => String(a.country || a.Pais).localeCompare(String(b.country || b.Pais)));
-    } else if (currentTab === 'sets') {
-      list = canCatalog.filter(can => {
-        const val = can.isSet;
-        return val === true || String(val).toLowerCase() === "true";
-      });
-    }
-
-    if (sortNewestFirst && currentTab !== 'ococ') {
-      return [...list].reverse();
-    }
-    return list;
-  }
-
-  function clearAllCardFocus() {
-    const topInput = document.getElementById("topBrandInput");
-    if (topInput) topInput.classList.remove("focused");
-
-    document.querySelectorAll(".card").forEach(c => c.classList.remove("focused"));
-    document.querySelectorAll(".vk-key").forEach(k => k.classList.remove("focused"));
-
-    const sortBtn = document.getElementById("sortOrderBtn");
-    if (sortBtn) sortBtn.classList.remove("focused");
-  }
-
-  function focusCardSafely(targetIndex) {
-    closeMenu();
-    closeTopVkPanel();
-    
-    requestAnimationFrame(() => {
-      const cards = document.querySelectorAll(".card");
-      if (cards.length > 0) {
-        const finalIdx = Math.min(Math.max(0, targetIndex), cards.length - 1);
-        clearAllCardFocus();
-
-        activeLocalIndex = finalIdx;
-        const targetCard = cards[finalIdx];
-        if (targetCard) {
-          targetCard.classList.add("focused");
-          targetCard.focus({ preventScroll: true });
-          updateCounter(finalIdx);
-        }
-      }
-    });
-  }
-
-  function openMenu() {
-    document.getElementById("sidebarDrawer").classList.add("open");
-    document.getElementById("mainArea").classList.add("pushed");
-    
-    if (lastSelectedMenuId === 'menuBtnBrands') {
-      const brandContainer = document.getElementById("brandInlineList");
-      if (brandContainer) brandContainer.classList.add("active");
-
-      if (brandContainer && lastSelectedBrandElem && brandContainer.contains(lastSelectedBrandElem)) {
-        lastSelectedBrandElem.focus();
-        return;
-      } else if (brandContainer) {
-        const firstBrand = brandContainer.querySelector(".brand-btn");
-        if (firstBrand) {
-          firstBrand.focus();
-          return;
-        }
-      }
-    }
-
-    const targetElem = document.getElementById(lastSelectedMenuId);
-    if (targetElem) targetElem.focus();
-    else {
-      const homeBtn = document.getElementById("menuBtnHome");
-      if (homeBtn) homeBtn.focus();
-    }
-  }
-
-  function closeMenu() {
-    const drawer = document.getElementById("sidebarDrawer");
-    const mainArea = document.getElementById("mainArea");
-    if (drawer) drawer.classList.remove("open");
-    if (mainArea) mainArea.classList.remove("pushed");
   }
 
   function toggleMenuMobile(e) {
     if(e) e.stopPropagation();
-    const drawer = document.getElementById("sidebarDrawer");
-    if (drawer && drawer.classList.contains("open")) closeMenu();
-    else openMenu();
+    document.getElementById("sidebarDrawer").classList.toggle("open");
+    document.getElementById("drawerOverlay").classList.toggle("active");
   }
 
-  function handleMainAreaClick() {
-    const drawer = document.getElementById("sidebarDrawer");
-    if (drawer && drawer.classList.contains("open")) {
-      closeMenu();
-    }
+  function closeMenu() {
+    document.getElementById("sidebarDrawer").classList.remove("open");
+    document.getElementById("drawerOverlay").classList.remove("active");
   }
 
-  function toggleSearchInline() {
-    lastSelectedMenuId = 'menuBtnSearch';
-    lastSelectedBrandElem = null;
-    const brandList = document.getElementById("brandInlineList");
-    if (brandList) brandList.classList.remove("active");
-    
-    const container = document.getElementById("searchInlineContainer");
-    if (container) {
-      container.classList.toggle("active");
-      if(container.classList.contains("active")) {
-        const vkContainer = document.getElementById("vkContainer");
-        const firstVk = vkContainer ? vkContainer.querySelector(".vk-key") : null;
-        if(firstVk) firstVk.focus();
-      }
-    }
-  }
-
-  function toggleBrandInline() {
-    lastSelectedMenuId = 'menuBtnBrands';
-    const searchContainer = document.getElementById("searchInlineContainer");
-    if (searchContainer) searchContainer.classList.remove("active");
-
-    const container = document.getElementById("brandInlineList");
-    if (container) {
-      container.classList.toggle("active");
-      if(container.classList.contains("active")) {
-        const firstBrand = container.querySelector(".brand-btn");
-        if(firstBrand) firstBrand.focus();
-      }
-    }
-  }
-
-  function buildVirtualKeyboard() {
-    const container = document.getElementById("vkContainer");
-    if (!container) return;
-    container.innerHTML = "";
-    vkKeys.forEach((k, index) => {
-      const btn = document.createElement("button");
-      btn.className = `vk-key ${ (k === 'ESPAÇO' || k === 'DEL' || k === 'LIMPAR') ? 'vk-key-wide' : '' }`;
-      btn.tabIndex = 0; 
-      btn.innerText = k;
-      
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        handleVkPress(k);
-      };
-
-      btn.onkeydown = (e) => {
-        if (e.key === "ArrowRight" || e.keyCode === 39) {
-          const isLastInRow = (index + 1) % 6 === 0 || index === vkKeys.length - 1;
-          if (isLastInRow) {
-            e.preventDefault();
-            focusCardSafely(activeLocalIndex);
-          }
-        }
-      };
-
-      container.appendChild(btn);
-    });
-  }
-
-  function handleVkPress(key) {
-    const input = document.getElementById("menuSearchInput");
-    if (!input) return;
-    if (key === 'ESPAÇO') input.value += ' ';
-    else if (key === 'DEL') input.value = input.value.slice(0, -1);
-    else if (key === 'LIMPAR') input.value = '';
-    else input.value += key;
-    filterCatalogByBrand(input.value);
-  }
-
-  function buildTopVirtualKeyboard() {
-    const container = document.getElementById("topVkContainer");
-    if (!container) return;
-    container.innerHTML = "";
-
-    vkKeys.forEach((k, index) => {
-      const btn = document.createElement("button");
-      btn.className = `vk-key ${ (k === 'ESPAÇO' || k === 'DEL' || k === 'LIMPAR') ? 'vk-key-wide' : '' }`;
-      btn.tabIndex = 0; 
-      btn.innerText = k;
-      btn.dataset.vkIndex = index;
-
-      const triggerKeyPress = () => {
-        handleTopVkPress(k);
-        setTimeout(() => {
-          btn.focus();
-          btn.classList.add("focused");
-        }, 10);
-      };
-
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        triggerKeyPress();
-      };
-
-      btn.onfocus = () => {
-        document.querySelectorAll("#topVkContainer .vk-key").forEach(el => el.classList.remove("focused"));
-        btn.classList.add("focused");
-      };
-
-      btn.onkeydown = (e) => {
-        const cols = 6;
-        const total = vkKeys.length;
-
-        if (e.key === "Enter" || e.keyCode === 13) {
-          e.preventDefault();
-          e.stopPropagation();
-          triggerKeyPress();
-        } else if (e.key === "ArrowRight" || e.keyCode === 39) {
-          e.preventDefault();
-          if (index < total - 1) {
-            const nextBtn = container.children[index + 1];
-            if (nextBtn) nextBtn.focus();
-          }
-        } else if (e.key === "ArrowLeft" || e.keyCode === 37) {
-          e.preventDefault();
-          if (index > 0) {
-            const prevBtn = container.children[index - 1];
-            if (prevBtn) prevBtn.focus();
-          }
-        } else if (e.key === "ArrowDown" || e.keyCode === 40) {
-          e.preventDefault();
-          if (index + cols < total) {
-            const downBtn = container.children[index + cols];
-            if (downBtn) downBtn.focus();
-          } else {
-            const autocomplete = document.getElementById("brandAutocompleteList");
-            const firstItem = autocomplete ? autocomplete.querySelector(".autocomplete-item") : null;
-            if (firstItem) firstItem.focus();
-          }
-        } else if (e.key === "ArrowUp" || e.keyCode === 38) {
-          e.preventDefault();
-          if (index - cols >= 0) {
-            const upBtn = container.children[index - cols];
-            if (upBtn) upBtn.focus();
-          }
-        } else if (e.key === "Escape" || e.keyCode === 27) {
-          e.preventDefault();
-          closeTopVkPanel();
-          focusCardSafely(0);
-        }
-      };
-
-      container.appendChild(btn);
-    });
-  }
-
-  function handleTopVkPress(key) {
-    const input = document.getElementById("topBrandInput");
-    if (!input) return;
-
-    if (key === 'ESPAÇO') input.value += ' ';
-    else if (key === 'DEL') input.value = input.value.slice(0, -1);
-    else if (key === 'LIMPAR') input.value = '';
-    else input.value += key;
-
-    const val = input.value.toLowerCase().trim();
-    if (val) {
-      const matches = registeredBrands.filter(b => b.toLowerCase().includes(val));
-      renderAutocompleteDropdown(matches);
-    } else {
-      closeAutocomplete();
-    }
-
-    filterCatalogByBrand(input.value);
-  }
-
-  function openTopVkPanel() {
-    const panel = document.getElementById("topVkPanel");
-    const input = document.getElementById("topBrandInput");
-    if (!panel || !input) return;
-
-    if (panel.parentNode !== document.body) {
-      document.body.appendChild(panel);
-    }
-
-    const rect = input.getBoundingClientRect();
-
-    Object.assign(panel.style, {
-      position: "fixed",
-      top: `${rect.bottom + 6}px`,
-      left: `${rect.left}px`,
-      right: "auto",
-      width: "420px",
-      zIndex: "99999",
-      boxShadow: "0 10px 30px rgba(0,0,0,0.85)"
-    });
-
-    panel.classList.add("active");
-    
-    setTimeout(() => {
-      const firstKey = panel.querySelector(".vk-key");
-      if (firstKey) {
-        firstKey.focus();
-        firstKey.classList.add("focused");
-      }
-    }, 50);
-  }
-
-  function closeTopVkPanel() {
-    const panel = document.getElementById("topVkPanel");
-    if (panel) {
-      panel.classList.remove("active");
-    }
-    closeAutocomplete();
-  }
-
-  function buildBrandList() {
-    const brandContainer = document.getElementById("brandInlineList");
-    if (!brandContainer) return;
-
-    brandContainer.innerHTML = "";
-    const baseList = getBaseListForCurrentTab();
-    const brands = [...new Set(baseList.map(c => c.brewery || c.Cervejaria).filter(Boolean))].sort();
-    
-    let defaultText = "TODAS AS MARCAS";
-    if (currentTab === 'ococ') defaultText = "TODOS OS PAÍSES";
-    if (currentTab === 'sets') defaultText = "TODOS OS SETS";
-
-    const allBtn = document.createElement("button");
-    allBtn.className = "brand-btn"; allBtn.tabIndex = 0; allBtn.innerText = defaultText;
-    
-    allBtn.onclick = (e) => { 
-      e.stopPropagation();
-      lastSelectedMenuId = 'menuBtnBrands';
-      lastSelectedBrandElem = allBtn;
-      const inputElem = document.getElementById("topBrandInput");
-      if (inputElem) inputElem.value = "";
-      filterCatalogByBrand(""); 
-      focusCardSafely(0); 
-    };
-
-    allBtn.onkeydown = (e) => {
-      if (e.key === "ArrowRight" || e.keyCode === 39) {
-        e.preventDefault();
-        focusCardSafely(activeLocalIndex);
-      }
-    };
-
-    brandContainer.appendChild(allBtn);
-
-    brands.forEach(b => {
-      const btn = document.createElement("button");
-      btn.className = "brand-btn"; btn.tabIndex = 0; btn.innerText = String(b).toUpperCase();
-      
-      btn.onclick = (e) => { 
-        e.stopPropagation();
-        lastSelectedMenuId = 'menuBtnBrands';
-        lastSelectedBrandElem = btn;
-        const inputElem = document.getElementById("topBrandInput");
-        if (inputElem) inputElem.value = b;
-        filterCatalogByBrand(b); 
-        focusCardSafely(0); 
-      };
-
-      btn.onkeydown = (e) => {
-        if (e.key === "ArrowRight" || e.keyCode === 39) {
-          e.preventDefault();
-          focusCardSafely(activeLocalIndex);
-        }
-      };
-
-      brandContainer.appendChild(btn);
-    });
+  function toggleSortOrder() {
+    sortNewestFirst = !sortNewestFirst;
+    const query = document.getElementById("topBrandInput").value;
+    filterCatalogByBrand(query);
   }
 
   function filterCatalogByBrand(query) {
     const val = query ? query.toLowerCase().trim() : "";
-    const baseList = getBaseListForCurrentTab();
+    let list = canCatalog.filter(can => !can.isSet || String(can.isSet).toLowerCase() === "false");
+    if (sortNewestFirst) list = [...list].reverse();
 
-    currentFiltered = baseList.filter(can => {
-      if (!val) return true;
-      const b = String(can.brewery || can.Cervejaria || "").toLowerCase();
-      return b.includes(val);
-    });
-
-    currentPage = 0;
-    activeLocalIndex = 0;
+    currentFiltered = list.filter(can => !val || String(can.brewery || can.Cervejaria || "").toLowerCase().includes(val));
     renderApp();
-    updateCounter(0);
-    updateBrandLogoHeader(query);
-  }
-
-  function updateBrandLogoHeader(brandQuery) {
-    const logoContainer = document.getElementById("heroBrandLogo");
-    const wallpaperElem = document.getElementById("heroBrandWallpaper");
-
-    if (!brandQuery || String(brandQuery).trim() === "") {
-      if (logoContainer) logoContainer.innerHTML = "";
-      if (wallpaperElem) {
-        wallpaperElem.style.backgroundImage = "none";
-        wallpaperElem.classList.remove("active");
-      }
-      return;
-    }
-
-    const queryLower = String(brandQuery).toLowerCase().trim();
-    const matchCan = canCatalog.find(c => {
-      const b = String(c.brewery || c.Cervejaria || "").toLowerCase().trim();
-      return b === queryLower || b.includes(queryLower);
-    });
-
-    if (matchCan) {
-      const logoUrl = matchCan.brandLogo || matchCan.BRAND_LOGO;
-      if (logoContainer) {
-        if (logoUrl && String(logoUrl).trim() !== "") {
-          logoContainer.innerHTML = `<img src="${getOptimizedImageUrl(logoUrl, 400)}" alt="LOGO DA MARCA">`;
-        } else {
-          logoContainer.innerHTML = "";
-        }
-      }
-
-      let wallpaperUrl = "";
-      const sameBrandCans = canCatalog.filter(c => {
-        const b = String(c.brewery || c.Cervejaria || "").toLowerCase().trim();
-        return b === queryLower || b.includes(queryLower);
-      });
-
-      const canWithWallpaper = sameBrandCans.find(c => {
-        const wp = c.brandWallpaper || c.wallpaper || c.BRANDWALLPAPER || c.WALLPAPER;
-        return wp && String(wp).trim() !== "";
-      });
-
-      if (canWithWallpaper) {
-        wallpaperUrl = canWithWallpaper.brandWallpaper || canWithWallpaper.wallpaper || canWithWallpaper.BRANDWALLPAPER || canWithWallpaper.WALLPAPER;
-      } else {
-        wallpaperUrl = matchCan.brandLogo || matchCan.BRAND_LOGO || matchCan.ImgCover || matchCan.cover;
-      }
-
-      if (wallpaperElem && wallpaperUrl && String(wallpaperUrl).trim() !== "") {
-        const fullImgUrl = getOptimizedImageUrl(wallpaperUrl, 1200);
-        wallpaperElem.style.backgroundImage = `url('${fullImgUrl}')`;
-        wallpaperElem.classList.add("active");
-      } else if (wallpaperElem) {
-        wallpaperElem.style.backgroundImage = "none";
-        wallpaperElem.classList.remove("active");
-      }
-    } else {
-      if (logoContainer) logoContainer.innerHTML = "";
-      if (wallpaperElem) {
-        wallpaperElem.style.backgroundImage = "none";
-        wallpaperElem.classList.remove("active");
-      }
-    }
-  }
-
-  const topBrandInput = document.getElementById("topBrandInput");
-  if (topBrandInput) {
-    topBrandInput.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openTopVkPanel();
-    });
-
-    topBrandInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.keyCode === 13) {
-        e.preventDefault();
-        openTopVkPanel();
-      }
-    });
-  }
-
-  function renderAutocompleteDropdown(matches) {
-    const brandAutocompleteList = document.getElementById("brandAutocompleteList");
-    if (!brandAutocompleteList) return;
-
-    brandAutocompleteList.innerHTML = "";
-    if (matches.length === 0) {
-      closeAutocomplete();
-      return;
-    }
-
-    matches.forEach((brand) => {
-      const item = document.createElement("div");
-      item.className = "autocomplete-item";
-      item.innerText = brand.toUpperCase();
-      item.tabIndex = 0;
-      
-      item.onclick = (e) => {
-        e.stopPropagation();
-        selectBrandFromAutocomplete(brand);
-      };
-
-      item.onkeydown = (e) => {
-        if (e.key === "Enter" || e.keyCode === 13) {
-          e.preventDefault();
-          selectBrandFromAutocomplete(brand);
-        } else if (e.key === "ArrowDown" || e.keyCode === 40) {
-          e.preventDefault();
-          const next = item.nextElementSibling;
-          if (next) next.focus();
-        } else if (e.key === "ArrowUp" || e.keyCode === 38) {
-          e.preventDefault();
-          const prev = item.previousElementSibling;
-          if (prev) {
-            prev.focus();
-          } else {
-            const vkContainer = document.getElementById("topVkContainer");
-            const keys = vkContainer ? vkContainer.querySelectorAll(".vk-key") : [];
-            if (keys.length > 0) keys[keys.length - 1].focus();
-          }
-        }
-      };
-
-      brandAutocompleteList.appendChild(item);
-    });
-
-    brandAutocompleteList.classList.add("active");
-  }
-
-  function selectBrandFromAutocomplete(brandName) {
-    const inputElem = document.getElementById("topBrandInput");
-    if (inputElem) inputElem.value = brandName.toUpperCase();
-    closeTopVkPanel();
-    filterCatalogByBrand(brandName);
-    focusCardSafely(0);
-  }
-
-  function closeAutocomplete() {
-    const brandAutocompleteList = document.getElementById("brandAutocompleteList");
-    if (brandAutocompleteList) {
-      brandAutocompleteList.innerHTML = "";
-      brandAutocompleteList.classList.remove("active");
-    }
-  }
-
-  function updateCounter(localIndex) {
-    const total = currentFiltered.length;
-    const globalIndex = currentPage * cardsPerPage + localIndex;
-    const currentNum = total > 0 ? (globalIndex + 1) : 0;
-    
-    const counterElem = document.getElementById("cardCounter");
-    if (counterElem) {
-      counterElem.innerText = `${currentNum}/${total}`;
-    }
-
-    const currentCan = currentFiltered[globalIndex];
-    if (currentCan) {
-      let rawPhotos = [];
-      if (currentCan.images) rawPhotos = [currentCan.images.front, currentCan.images.left, currentCan.images.back, currentCan.images.right].filter(Boolean);
-      if (rawPhotos.length === 0) rawPhotos = [currentCan.ImgFront, currentCan.ImgLeft, currentCan.ImgBack, currentCan.ImgRight].filter(Boolean);
-      const logoUrl = currentCan.brandLogo || currentCan.BRAND_LOGO;
-      if (rawPhotos.length === 0 && logoUrl) rawPhotos.push(logoUrl);
-      zoomGallery = rawPhotos;
-
-      const inputElem = document.getElementById("topBrandInput");
-      const currentInputVal = inputElem ? inputElem.value.trim() : "";
-      const heroBrandLogo = document.getElementById("heroBrandLogo");
-
-      if (!currentInputVal && logoUrl && heroBrandLogo) {
-        heroBrandLogo.innerHTML = `<img src="${getOptimizedImageUrl(logoUrl, 400)}" alt="LOGO DA MARCA">`;
-      }
-    } else {
-      zoomGallery = [];
-    }
+    document.getElementById("cardCounter").innerText = `1/${currentFiltered.length}`;
   }
 
   function renderApp() {
-    clearAllCardFocus();
     const row = document.getElementById("cardRow");
     if (!row) return;
     row.innerHTML = "";
 
-    const startIndex = currentPage * cardsPerPage;
-    const pageItems = currentFiltered.slice(startIndex, startIndex + cardsPerPage);
-
-    pageItems.forEach((can, localIndex) => {
-      const globalIndex = startIndex + localIndex;
-
-      const rawImg = can.ImgCover || can.cover || can.ImgFront || can.front || can.brandLogo;
-      const frontImg = getOptimizedImageUrl(rawImg, 400);
-
-      const brandRaw = can.brewery || can.Cervejaria || can.name || "Cerveja";
-      const brandFormatted = formatCapitalizedText(brandRaw);
-
-      const countryRaw = can.country || can.Pais || "";
-      const countryFormatted = formatCapitalizedText(countryRaw);
-
-      const volumeText = can.volume || can.Volume || "";
-      const flagUrl = getFlagUrlByCountry(countryRaw);
-
-      let cardColor = can.brandColor || can.color;
-      if (!cardColor || cardColor === "") {
-        const brandKey = String(brandRaw).toLowerCase().trim();
-        const sameBrandCan = canCatalog.find(c => {
-          const b = String(c.brewery || c.Cervejaria || "").toLowerCase().trim();
-          const cColor = c.brandColor || c.color;
-          return b === brandKey && cColor && String(cColor).trim() !== "";
-        });
-        if (sameBrandCan) {
-          cardColor = sameBrandCan.brandColor || sameBrandCan.color;
-        }
-      }
-      if (!cardColor) {
-        cardColor = "#008234";
-      }
+    currentFiltered.forEach((can) => {
+      const frontImg = getOptimizedImageUrl(can.ImgCover || can.cover || can.ImgFront, 300);
+      const brandFormatted = formatCapitalizedText(can.brewery || can.Cervejaria || "Cerveja");
+      const countryFormatted = formatCapitalizedText(can.country || can.Pais || "");
 
       const card = document.createElement("div");
-      card.className = `card ${currentTab === 'sets' ? 'card-aspect-sets' : ''}`;
-      card.tabIndex = 0;
-      card.dataset.localIndex = localIndex;
-      card.dataset.globalIndex = globalIndex;
-      
-      card.onmouseenter = () => {
-        clearAllCardFocus();
-        card.classList.add("focused");
-        activeLocalIndex = localIndex;
-        updateCounter(localIndex);
-      };
-
-      card.onfocus = () => {
-        if (document.getElementById("zoomModal").classList.contains("active") || document.getElementById("exitModal").classList.contains("active")) return;
-        clearAllCardFocus();
-        card.classList.add("focused");
-        activeLocalIndex = localIndex;
-        updateCounter(localIndex);
-      };
-      
-      card.onclick = (e) => {
-        e.stopPropagation();
-        openZoomModal(0);
-      };
-
-      card.onkeydown = (e) => {
-        if (document.getElementById("zoomModal").classList.contains("active") || document.getElementById("exitModal").classList.contains("active")) return;
-
-        const key = e.key;
-        const keyCode = e.keyCode;
-
-        if (key === "Enter" || key === " " || keyCode === 13) {
-          e.preventDefault();
-          e.stopPropagation();
-          openZoomModal(0);
-        } else if (key === "ArrowRight" || keyCode === 39) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (localIndex < pageItems.length - 1) {
-            focusCardSafely(localIndex + 1);
-          } else if ((startIndex + cardsPerPage) < currentFiltered.length) {
-            currentPage++;
-            renderApp();
-            focusCardSafely(0);
-          }
-        } else if (key === "ArrowLeft" || keyCode === 37) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (localIndex > 0) {
-            focusCardSafely(localIndex - 1);
-          } else if (currentPage > 0) {
-            currentPage--;
-            renderApp();
-            focusCardSafely(cardsPerPage - 1);
-          } else {
-            clearAllCardFocus();
-            openMenu();
-          }
-        } else if (key === "ArrowDown" || keyCode === 40) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (localIndex < cardsPerRow) {
-            if (localIndex + cardsPerRow < pageItems.length) {
-              focusCardSafely(localIndex + cardsPerRow);
-            } else if ((startIndex + cardsPerPage) < currentFiltered.length) {
-              currentPage++;
-              renderApp();
-              focusCardSafely(0);
-            }
-          } else if ((startIndex + cardsPerPage) < currentFiltered.length) {
-            currentPage++;
-            renderApp();
-            focusCardSafely(localIndex % cardsPerRow);
-          }
-        } else if (key === "ArrowUp" || keyCode === 38) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (localIndex >= cardsPerRow) {
-            focusCardSafely(localIndex - cardsPerRow);
-          } else if (currentPage > 0) {
-            currentPage--;
-            renderApp();
-            const target = cardsPerRow + (localIndex % cardsPerRow);
-            focusCardSafely(target);
-          } else {
-            /* FOCA NO BOTÃO DO TRIÂNGULO DA CONTAGEM */
-            clearAllCardFocus();
-            const sortBtn = document.getElementById("sortOrderBtn");
-            if (sortBtn) {
-              sortBtn.classList.add("focused");
-              sortBtn.focus();
-            } else {
-              openTopVkPanel();
-            }
-          }
-        }
-      };
+      card.className = "card";
 
       card.innerHTML = `
-        <div class="card-top-photo">
-          <img src="${frontImg}" alt="${brandFormatted}" loading="lazy" decoding="async">
-        </div>
-        <div class="card-bottom-bar" style="background-color: ${cardColor};">
+        <div class="card-top-photo"><img src="${frontImg}" loading="lazy"></div>
+        <div class="card-bottom-bar" style="background-color: ${can.brandColor || '#008234'};">
           <div class="card-bar-title">${brandFormatted}</div>
           <div class="card-bar-details">
-            <div class="card-bar-country">
-              ${flagUrl ? `<img src="${flagUrl}" class="card-bar-flag" alt="${countryFormatted}" loading="lazy">` : ''}
-              <span>${countryFormatted}</span>
-            </div>
-            ${volumeText ? `<div class="card-bar-vol">${volumeText}</div>` : ''}
+            <div class="card-bar-country"><span>${countryFormatted}</span></div>
+            ${can.volume ? `<div class="card-bar-vol">${can.volume}</div>` : ''}
           </div>
         </div>
       `;
-
       row.appendChild(card);
     });
   }
 
-  function openZoomModal(index) {
-    if (!zoomGallery || zoomGallery.length === 0) return;
-    currentZoomIndex = index;
-    resetZoomTransform();
-    const imgElem = document.getElementById("zoomImage");
-    if (imgElem) imgElem.src = getOptimizedImageUrl(zoomGallery[currentZoomIndex], 1200);
-    document.getElementById("zoomModal").classList.add("active");
-  }
-
-  function resetZoomTransform() {
-    zoomState = 0;
-    zoomLevel = 1.0;
-    panX = 0;
-    panY = 0;
-    applyZoomTransform();
-  }
-
-  function applyZoomTransform() {
-    const imgElem = document.getElementById("zoomImage");
-    if (imgElem) {
-      imgElem.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
-    }
-  }
-
-  function toggleZoomStep() {
-    zoomState = (zoomState + 1) % 4;
-
-    if (zoomState === 0) {
-      zoomLevel = 1.0; panX = 0; panY = 0;
-    } else if (zoomState === 1) {
-      zoomLevel = 1.5;
-    } else if (zoomState === 2) {
-      zoomLevel = 3.0;
-    } else if (zoomState === 3) {
-      zoomLevel = 1.5;
-    }
-
-    applyZoomTransform();
-  }
-
-  function navigateZoom(direction) {
-    if (!zoomGallery || zoomGallery.length === 0) return;
-    currentZoomIndex = (currentZoomIndex + direction + zoomGallery.length) % zoomGallery.length;
-    resetZoomTransform();
-    const imgElem = document.getElementById("zoomImage");
-    if (imgElem) imgElem.src = getOptimizedImageUrl(zoomGallery[currentZoomIndex], 1200);
-  }
-
-  function closeZoomModal() {
-    resetZoomTransform();
-    document.getElementById("zoomModal").classList.remove("active");
-    focusCardSafely(activeLocalIndex);
-  }
-
-  function openExitModal() {
-    closeMenu();
-    document.getElementById("exitModal").classList.add("active");
-    const btnNo = document.getElementById("exitBtnNo");
-    if (btnNo) btnNo.focus();
-  }
-
-  function closeExitModal() {
-    document.getElementById("exitModal").classList.remove("active");
-    focusCardSafely(activeLocalIndex);
-  }
-
-  function confirmExit() {
-    if (typeof PonteAndroid !== "undefined") {
-      PonteAndroid.fecharApp();
-    } else if (window.navigator && window.navigator.app && window.navigator.app.exitApp) {
-      window.navigator.app.exitApp();
-    } else if (window.device && window.device.exitApp) {
-      window.device.exitApp();
-    } else {
-      window.close();
-    }
-  }
-
-  let touchStartX = 0;
-  let touchStartY = 0;
-
-  const catalogSection = document.getElementById("catalogSection");
-  if (catalogSection) {
-    catalogSection.addEventListener("touchstart", (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-      touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
-
-    catalogSection.addEventListener("touchend", (e) => {
-      const touchEndX = e.changedTouches[0].screenX;
-      const touchEndY = e.changedTouches[0].screenY;
-      handleSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
-    }, { passive: true });
-
-    catalogSection.addEventListener("wheel", (e) => {
-      if (e.deltaY > 0) {
-        if (((currentPage + 1) * cardsPerPage) < currentFiltered.length) {
-          currentPage++;
-          renderApp();
-          focusCardSafely(activeLocalIndex);
-        }
-      } else if (e.deltaY < 0) {
-        if (currentPage > 0) {
-          currentPage--;
-          renderApp();
-          focusCardSafely(activeLocalIndex);
-        }
-      }
-    }, { passive: true });
-  }
-
-  function handleSwipe(startX, startY, endX, endY) {
-    const diffX = endX - startX;
-    const diffY = endY - startY;
-    const threshold = 30;
-
-    if (Math.abs(diffY) > Math.abs(diffX)) {
-      if (diffY < -threshold) {
-        if (((currentPage + 1) * cardsPerPage) < currentFiltered.length) {
-          currentPage++;
-          renderApp();
-          focusCardSafely(activeLocalIndex);
-        }
-      } else if (diffY > threshold) {
-        if (currentPage > 0) {
-          currentPage--;
-          renderApp();
-          focusCardSafely(activeLocalIndex);
-        }
-      }
-    } else {
-      if (diffX < -threshold) {
-        const cards = document.querySelectorAll(".card");
-        if (activeLocalIndex < cards.length - 1) {
-          focusCardSafely(activeLocalIndex + 1);
-        } else if (((currentPage + 1) * cardsPerPage) < currentFiltered.length) {
-          currentPage++;
-          renderApp();
-          focusCardSafely(0);
-        }
-      } else if (diffX > threshold) {
-        if (activeLocalIndex > 0) {
-          focusCardSafely(activeLocalIndex - 1);
-        } else if (currentPage > 0) {
-          currentPage--;
-          renderApp();
-          focusCardSafely(cardsPerPage - 1);
-        }
-      }
-    }
-  }
-
-  /* NAVEGAÇÃO DO BOTÃO DO TRIÂNGULO DA CONTAGEM */
-  const sortBtnElem = document.getElementById("sortOrderBtn");
-  if (sortBtnElem) {
-    sortBtnElem.onkeydown = (e) => {
-      if (e.key === "Enter" || e.key === " " || e.keyCode === 13) {
-        e.preventDefault();
-        toggleSortOrder();
-      } else if (e.key === "ArrowDown" || e.keyCode === 40) {
-        e.preventDefault();
-        focusCardSafely(activeLocalIndex); /* RETORNA O FOCO PARA OS CARDS */
-      } else if (e.key === "ArrowUp" || e.keyCode === 38) {
-        e.preventDefault();
-        clearAllCardFocus();
-        openTopVkPanel(); /* SOBE O FOCO PARA A BUSCA / TECLADO SUPERIOR */
-      } else if (e.key === "ArrowLeft" || e.keyCode === 37) {
-        e.preventDefault();
-        openMenu();
-      }
-    };
-  }
-
-  document.addEventListener("keydown", (e) => {
-    const zoomModal = document.getElementById("zoomModal");
-    const exitModal = document.getElementById("exitModal");
-    const sidebarDrawer = document.getElementById("sidebarDrawer");
-    const topVkPanel = document.getElementById("topVkPanel");
-
-    const isZoomActive = zoomModal ? zoomModal.classList.contains("active") : false;
-    const isExitActive = exitModal ? exitModal.classList.contains("active") : false;
-    const isMenuOpen = sidebarDrawer ? sidebarDrawer.classList.contains("open") : false;
-
-    if (isZoomActive) {
-      if (e.key === "Enter" || e.key === " " || e.keyCode === 13) {
-        e.preventDefault();
-        toggleZoomStep();
-      } else if (zoomLevel > 1.0) {
-        if (e.key === "ArrowLeft" || e.keyCode === 37) {
-          e.preventDefault(); panX += PAN_STEP; applyZoomTransform();
-        } else if (e.key === "ArrowRight" || e.keyCode === 39) {
-          e.preventDefault(); panX -= PAN_STEP; applyZoomTransform();
-        } else if (e.key === "ArrowUp" || e.keyCode === 38) {
-          e.preventDefault(); panY += PAN_STEP; applyZoomTransform();
-        } else if (e.key === "ArrowDown" || e.keyCode === 40) {
-          e.preventDefault(); panY -= PAN_STEP; applyZoomTransform();
-        } else if (e.key === "Escape" || e.key === "Back" || e.keyCode === 10009 || e.keyCode === 27) {
-          e.preventDefault(); closeZoomModal();
-        }
-      } else {
-        if (e.key === "ArrowLeft" || e.keyCode === 37) {
-          e.preventDefault(); navigateZoom(-1);
-        } else if (e.key === "ArrowRight" || e.keyCode === 39) {
-          e.preventDefault(); navigateZoom(1);
-        } else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "Escape" || e.key === "Back" || e.keyCode === 10009 || e.keyCode === 27) {
-          e.preventDefault(); closeZoomModal();
-        }
-      }
-    } else if (isExitActive) {
-      if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.keyCode === 37 || e.keyCode === 39) {
-        e.preventDefault();
-        const active = document.activeElement;
-        const btnNo = document.getElementById("exitBtnNo");
-        const btnYes = document.getElementById("exitBtnYes");
-        if (active === btnNo && btnYes) btnYes.focus();
-        else if (btnNo) btnNo.focus();
-      } else if (e.key === "Escape" || e.key === "Back" || e.keyCode === 10009 || e.keyCode === 27) {
-        e.preventDefault(); closeExitModal();
-      }
-    } else {
-      if (e.key === "Escape" || e.key === "Back" || e.keyCode === 10009 || e.keyCode === 27) {
-        e.preventDefault();
-        if (isMenuOpen) {
-          closeMenu();
-          focusCardSafely(activeLocalIndex);
-        } else if (topVkPanel && topVkPanel.classList.contains("active")) {
-          closeTopVkPanel();
-          focusCardSafely(activeLocalIndex);
-        } else {
-          openExitModal();
-        }
-      }
-
-      const activeElem = document.activeElement;
-      if (activeElem && (activeElem.classList.contains("cat-btn") || activeElem.classList.contains("brand-btn")) && (e.key === "ArrowRight" || e.keyCode === 39)) {
-        e.preventDefault();
-        focusCardSafely(activeLocalIndex);
-      }
-    }
-  }, true);
-
-  window.onload = () => {
-    fetchCatalogFromSheet();
-  };
+  window.onload = fetchCatalogFromSheet;
 </script>
-
 </body>
 </html>
