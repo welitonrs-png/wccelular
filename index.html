@@ -381,7 +381,6 @@
       if (counterElem) counterElem.innerText = `${index + 1}/${currentFiltered.length}`;
     }
   }
-
   function updateHeroPanel(can) {
     document.getElementById("heroTitle").innerText = formatCapitalizedText(can.name || can.Nome || "Selecione uma lata");
     document.getElementById("heroCountry").innerText = formatCapitalizedText(can.country || can.Pais || "-");
@@ -390,23 +389,26 @@
     document.getElementById("heroBarcode").innerText = can.barcode || can.Barcode || "-";
     document.getElementById("heroBrandDescription").innerText = can.brandDesc || can.descricao || "";
 
-    const photo1 = getOptimizedImageUrl(can.ImgCover || can.ImgFront || "", 300);
-    const photo2 = getOptimizedImageUrl(can.ImgFront || can.ImgCover || "", 300);
-    const photo3 = getOptimizedImageUrl(can.ImgLeft || can.ImgCover || "", 300);
-    const photo4 = getOptimizedImageUrl(can.ImgBack || can.ImgCover || "", 300);
+    // Mapeamento correto das 4 posições (Frente, Esquerda, Trás, Direita)
+    const photo1 = getOptimizedImageUrl(can.ImgFront || can.front || can.ImgCover || "", 300);
+    const photo2 = getOptimizedImageUrl(can.ImgLeft || can.left || "", 300);
+    const photo3 = getOptimizedImageUrl(can.ImgBack || can.back || "", 300);
+    const photo4 = getOptimizedImageUrl(can.ImgRight || can.right || "", 300);
 
     document.getElementById("heroPhoto1").src = photo1;
     document.getElementById("heroPhoto2").src = photo2;
     document.getElementById("heroPhoto3").src = photo3;
     document.getElementById("heroPhoto4").src = photo4;
 
+    // Galeria do Zoom/Lightbox seguindo a mesma ordem exata
     zoomGallery = [
-      can.ImgCover || can.ImgFront, 
-      can.ImgFront || can.ImgCover, 
-      can.ImgLeft || can.ImgCover, 
-      can.ImgBack || can.ImgCover
+      can.ImgFront || can.front || can.ImgCover,
+      can.ImgLeft || can.left,
+      can.ImgBack || can.back,
+      can.ImgRight || can.right
     ].filter(Boolean);
   }
+
 
   function renderApp() {
     const row = document.getElementById("cardRow");
