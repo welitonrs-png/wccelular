@@ -9,6 +9,19 @@
     
     body { background-color: #282A2D; color: #DDDDDD; height: 100vh; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
 
+    /* 2. FORÇAR ORIENTAÇÃO VERTICAL SE O CELULAR FOR GIRADO */
+    @media (orientation: landscape) {
+      body {
+        transform: rotate(-90deg);
+        transform-origin: left top;
+        width: 100vh;
+        height: 100vw;
+        position: absolute;
+        top: 100%;
+        left: 0;
+      }
+    }
+
     .app-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; background-color: #282A2D; overflow: hidden; }
 
     /* TELA DE CARREGAMENTO */
@@ -51,16 +64,18 @@
     .cat-btn {
       display: flex; align-items: center; width: 100%; padding: 12px 14px; border-radius: 10px;
       background: transparent; color: #e2e8f0; font-size: 0.9rem; font-weight: 600; border: none;
-      text-align: left; cursor: pointer; text-transform: uppercase !important;
+      text-align: left; cursor: pointer; text-transform: uppercase !important; line-height: 1.4;
     }
     .cat-btn:active, .cat-btn:hover { background: rgba(255,255,255,0.1); color: #f39c12; }
 
-    .inline-panel-container { display: none; flex-direction: column; gap: 4px; padding: 6px 0; max-height: 200px; overflow-y: auto; }
+    .inline-panel-container { display: none; flex-direction: column; gap: 4px; padding: 6px 0; max-height: 220px; overflow-y: auto; }
     .inline-panel-container.active { display: flex; }
 
+    /* 1. CORREÇÃO DO TEXTO DAS MARCAS CORTADO NO MENU */
     .brand-btn { 
-      font-size: 0.8rem; padding: 8px 12px; border-radius: 6px; background: transparent; color: #a0aec0; 
-      border: none; text-align: left; font-weight: 600; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 0.85rem; padding: 10px 12px; border-radius: 6px; background: transparent; color: #a0aec0; 
+      border: none; text-align: left; font-weight: 600; text-transform: uppercase; white-space: nowrap; 
+      overflow: hidden; text-overflow: ellipsis; line-height: 1.5; display: block; min-height: 38px;
     }
     .brand-btn:active, .brand-btn:hover { color: #ffffff; background: rgba(255,255,255,0.1); }
 
@@ -381,6 +396,7 @@
       if (counterElem) counterElem.innerText = `${index + 1}/${currentFiltered.length}`;
     }
   }
+
   function updateHeroPanel(can) {
     document.getElementById("heroTitle").innerText = formatCapitalizedText(can.name || can.Nome || "Selecione uma lata");
     document.getElementById("heroCountry").innerText = formatCapitalizedText(can.country || can.Pais || "-");
@@ -389,7 +405,6 @@
     document.getElementById("heroBarcode").innerText = can.barcode || can.Barcode || "-";
     document.getElementById("heroBrandDescription").innerText = can.brandDesc || can.descricao || "";
 
-    // Mapeamento correto das 4 posições (Frente, Esquerda, Trás, Direita)
     const photo1 = getOptimizedImageUrl(can.ImgFront || can.front || can.ImgCover || "", 300);
     const photo2 = getOptimizedImageUrl(can.ImgLeft || can.left || "", 300);
     const photo3 = getOptimizedImageUrl(can.ImgBack || can.back || "", 300);
@@ -400,7 +415,6 @@
     document.getElementById("heroPhoto3").src = photo3;
     document.getElementById("heroPhoto4").src = photo4;
 
-    // Galeria do Zoom/Lightbox seguindo a mesma ordem exata
     zoomGallery = [
       can.ImgFront || can.front || can.ImgCover,
       can.ImgLeft || can.left,
@@ -408,7 +422,6 @@
       can.ImgRight || can.right
     ].filter(Boolean);
   }
-
 
   function renderApp() {
     const row = document.getElementById("cardRow");
