@@ -69,7 +69,6 @@
     /* ESTRUTURA PRINCIPAL COM HERO FIXO */
     .main-area { flex: 1; display: flex; flex-direction: column; height: calc(100vh - 51px); overflow: hidden; }
 
-    /* 1. HERO PANEL FIXO NA TELA */
     .hero-panel { 
       background: rgba(22, 27, 38, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1); 
       display: flex; flex-direction: column; padding: 10px 12px; gap: 10px; flex-shrink: 0; z-index: 100;
@@ -77,7 +76,6 @@
 
     .hero-content { display: flex; flex-direction: column; gap: 8px; }
     
-    /* 6. OS 4 CARDS SUPERIORES CLICÁVEIS PARA LIGHTBOX */
     .hero-left-photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
     .hero-photo-card { 
       background: #ffffff; border-radius: 6px; padding: 2px; display: flex; 
@@ -105,7 +103,6 @@
       gap: 10px; width: 100%; 
     }
 
-    /* 4. CONFIGURAÇÃO DOS CARDS NORMAIS VS SETS */
     .card {
       width: 100% !important; height: 155px !important; background: #ffffff !important;
       border-radius: 8px !important; overflow: hidden !important; display: flex !important;
@@ -113,7 +110,7 @@
     }
     .card.focused { border-color: #f39c12 !important; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5) !important; }
 
-    /* 4. ESTRUTURA PARA SETS EM 2 COLUNAS DEITADAS */
+    /* CONFIGURAÇÃO SETS */
     .card-row.sets-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .card-row.sets-grid .card { height: 110px !important; }
     .card-row.sets-grid .card-top-photo { height: 70px !important; }
@@ -127,10 +124,27 @@
     .card-bar-country { display: flex !important; align-items: center !important; gap: 2px !important; font-size: 0.55rem !important; color: #ffffff !important; }
     .card-bar-vol { background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important; padding: 1px 3px !important; border-radius: 3px !important; font-size: 0.50rem !important; }
 
-    /* MODAL ZOOM */
+    /* MODAL ZOOM COM NAVEGAÇÃO */
     .zoom-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 3000; display: none; justify-content: center; align-items: center; padding: 10px; }
     .zoom-modal.active { display: flex; }
-    .zoom-modal img { max-width: 95vw; max-height: 95vh; object-fit: contain; }
+    .zoom-modal img { max-width: 90vw; max-height: 85vh; object-fit: contain; }
+
+    .zoom-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #f39c12;
+      font-size: 2rem;
+      font-weight: bold;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+      z-index: 3100;
+      background: rgba(0,0,0,0.4);
+      border-radius: 50%;
+    }
+    .zoom-prev { left: 10px; }
+    .zoom-next { right: 10px; }
   </style>
 </head>
 <body>
@@ -154,13 +168,11 @@
     <nav class="sidebar-drawer" id="sidebarDrawer">
       <button class="cat-btn" onclick="switchTab('home')">HOME / CATÁLOGO</button>
       
-      <!-- BUSCA DENTRO DO MENU -->
       <button class="cat-btn" onclick="toggleSearchInline()">PESQUISAR</button>
       <div class="inline-panel-container" id="searchInlineContainer">
         <input type="text" id="mobileSearchInput" class="menu-search-box" placeholder="DIGITE A BUSCA..." oninput="filterCatalog(this.value)">
       </div>
 
-      <!-- 3. MARCAS COM LISTA EXPANSÍVEL -->
       <button class="cat-btn" onclick="toggleBrandInline()">MARCAS</button>
       <div class="inline-panel-container" id="brandInlineList"></div>
 
@@ -169,10 +181,9 @@
     </nav>
 
     <main class="main-area">
-      <!-- 1. BLOCO HERO FIXO NA TELA -->
+      <!-- BLOCO HERO FIXO NA TELA -->
       <section class="hero-panel">
         <div class="hero-content">
-          <!-- 6. CLIQUE AQUI ABRE O LIGHTBOX/ZOOM -->
           <div class="hero-left-photos">
             <div class="hero-photo-card" onclick="openZoomModal(0)"><img src="" id="heroPhoto1"></div>
             <div class="hero-photo-card" onclick="openZoomModal(1)"><img src="" id="heroPhoto2"></div>
@@ -202,8 +213,11 @@
     </main>
   </div>
 
+  <!-- MODAL ZOOM COM NAVEGAÇÃO E TOUCH SWIPE -->
   <div class="zoom-modal" id="zoomModal" onclick="closeZoomModal()">
-    <img id="zoomImage" src="">
+    <span class="zoom-nav-btn zoom-prev" onclick="event.stopPropagation(); navigateZoom(-1);">&#10094;</span>
+    <img id="zoomImage" src="" onclick="event.stopPropagation();">
+    <span class="zoom-nav-btn zoom-next" onclick="event.stopPropagation(); navigateZoom(1);">&#10095;</span>
   </div>
 
 <script>
@@ -211,9 +225,13 @@
   let canCatalog = [];
   let currentFiltered = [];
   let zoomGallery = [];
+  let currentZoomIndex = 0;
   let sortNewestFirst = true;
   let currentTab = 'home';
   let activeIndex = 0;
+
+  let touchZoomStartX = 0;
+  let touchZoomEndX = 0;
 
   function fixDriveUrl(url) {
     if (!url) return '';
@@ -353,7 +371,6 @@
     document.getElementById("brandInlineList").classList.toggle("active");
   }
 
-  /* 6. CLICAR NO CARD APENAS SELECIONA E MUTA O HERO */
   function selectCard(index) {
     activeIndex = index;
     document.querySelectorAll(".card").forEach((c, i) => c.classList.toggle("focused", i === index));
@@ -383,7 +400,12 @@
     document.getElementById("heroPhoto3").src = photo3;
     document.getElementById("heroPhoto4").src = photo4;
 
-    zoomGallery = [can.ImgCover || can.ImgFront, can.ImgFront || can.ImgCover, can.ImgLeft || can.ImgCover, can.ImgBack || can.ImgCover].filter(Boolean);
+    zoomGallery = [
+      can.ImgCover || can.ImgFront, 
+      can.ImgFront || can.ImgCover, 
+      can.ImgLeft || can.ImgCover, 
+      can.ImgBack || can.ImgCover
+    ].filter(Boolean);
   }
 
   function renderApp() {
@@ -391,7 +413,6 @@
     if (!row) return;
     row.innerHTML = "";
 
-    /* 4. SE FOR A ABA SETS, APLICA A CLASSE PARA AJUSTAR 2 COLUNAS */
     if (currentTab === 'sets') {
       row.classList.add("sets-grid");
     } else {
@@ -405,8 +426,6 @@
 
       const card = document.createElement("div");
       card.className = "card";
-      
-      /* 6. CLIQUE NO CARD APENAS ALTERA A PARTE DE CIMA */
       card.onclick = () => selectCard(index);
 
       card.innerHTML = `
@@ -423,15 +442,53 @@
     });
   }
 
-  /* 6. ABRIR ZOOM/LIGHTBOX QUANDO CLICAR NAS FOTOS DE CIMA */
+  /* NAVEGAÇÃO E GESTOS NO LIGHTBOX */
   function openZoomModal(index) {
-    if (!zoomGallery || zoomGallery.length === 0 || !zoomGallery[index]) return;
-    document.getElementById("zoomImage").src = getOptimizedImageUrl(zoomGallery[index], 1200);
+    if (!zoomGallery || zoomGallery.length === 0) return;
+    currentZoomIndex = index;
+    updateZoomImage();
     document.getElementById("zoomModal").classList.add("active");
+  }
+
+  function updateZoomImage() {
+    const imgElem = document.getElementById("zoomImage");
+    if (imgElem && zoomGallery[currentZoomIndex]) {
+      imgElem.src = getOptimizedImageUrl(zoomGallery[currentZoomIndex], 1200);
+    }
+  }
+
+  function navigateZoom(direction) {
+    if (!zoomGallery || zoomGallery.length === 0) return;
+    currentZoomIndex = (currentZoomIndex + direction + zoomGallery.length) % zoomGallery.length;
+    updateZoomImage();
   }
 
   function closeZoomModal() {
     document.getElementById("zoomModal").classList.remove("active");
+  }
+
+  /* DETECÇÃO DE SWIPE COM O DEDO NO LIGHTBOX */
+  const zoomModalElem = document.getElementById("zoomModal");
+  if (zoomModalElem) {
+    zoomModalElem.addEventListener("touchstart", (e) => {
+      touchZoomStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    zoomModalElem.addEventListener("touchend", (e) => {
+      touchZoomEndX = e.changedTouches[0].screenX;
+      handleZoomSwipe();
+    }, { passive: true });
+  }
+
+  function handleZoomSwipe() {
+    const diffX = touchZoomEndX - touchZoomStartX;
+    const threshold = 40;
+
+    if (diffX < -threshold) {
+      navigateZoom(1);  /* Arrastou para a esquerda -> Próxima foto */
+    } else if (diffX > threshold) {
+      navigateZoom(-1); /* Arrastou para a direita -> Foto anterior */
+    }
   }
 
   window.onload = fetchCatalogFromSheet;
