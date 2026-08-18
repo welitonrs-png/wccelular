@@ -9,7 +9,7 @@
     
     body { background-color: #282A2D; color: #DDDDDD; height: 100vh; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
 
-    /* 2. FORÇAR ORIENTAÇÃO VERTICAL SE O CELULAR FOR GIRADO */
+    /* FORÇAR ORIENTAÇÃO VERTICAL SE O CELULAR FOR GIRADO */
     @media (orientation: landscape) {
       body {
         transform: rotate(-90deg);
@@ -71,7 +71,6 @@
     .inline-panel-container { display: none; flex-direction: column; gap: 4px; padding: 6px 0; max-height: 220px; overflow-y: auto; }
     .inline-panel-container.active { display: flex; }
 
-    /* 1. CORREÇÃO DO TEXTO DAS MARCAS CORTADO NO MENU */
     .brand-btn { 
       font-size: 0.85rem; padding: 10px 12px; border-radius: 6px; background: transparent; color: #a0aec0; 
       border: none; text-align: left; font-weight: 600; text-transform: uppercase; white-space: nowrap; 
@@ -87,9 +86,18 @@
     .hero-panel { 
       background: rgba(22, 27, 38, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1); 
       display: flex; flex-direction: column; padding: 10px 12px; gap: 10px; flex-shrink: 0; z-index: 100;
+      position: relative; overflow: hidden;
     }
 
-    .hero-content { display: flex; flex-direction: column; gap: 8px; }
+    /* ESTILO DO WALLPAPER NO FUNDO DO HERO */
+    .hero-brand-wallpaper {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+      opacity: 0; transition: opacity 0.5s ease; z-index: 1; pointer-events: none;
+    }
+    .hero-brand-wallpaper.active { opacity: 0.25; }
+
+    .hero-content { display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 10; }
     
     .hero-left-photos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
     .hero-photo-card { 
@@ -196,8 +204,9 @@
     </nav>
 
     <main class="main-area">
-      <!-- BLOCO HERO FIXO NA TELA -->
+      <!-- BLOCO HERO FIXO NA TELA COM WALLPAPER -->
       <section class="hero-panel">
+        <div class="hero-brand-wallpaper" id="heroBrandWallpaper"></div>
         <div class="hero-content">
           <div class="hero-left-photos">
             <div class="hero-photo-card" onclick="openZoomModal(0)"><img src="" id="heroPhoto1"></div>
@@ -415,12 +424,54 @@
     document.getElementById("heroPhoto3").src = photo3;
     document.getElementById("heroPhoto4").src = photo4;
 
+    // ATUALIZAÇÃO DO WALLPAPER NO FUNDO DO HERO
+    updateBrandWallpaper(can.brewery || can.Cervejaria);
+
     zoomGallery = [
       can.ImgFront || can.front || can.ImgCover,
       can.ImgLeft || can.left,
       can.ImgBack || can.back,
       can.ImgRight || can.right
     ].filter(Boolean);
+  }
+
+  /* FUNÇÃO PARA BUSCAR E ATUALIZAR O WALLPAPER DA CERVEJARIA */
+  function updateBrandWallpaper(brandQuery) {
+    const wallpaperElem = document.getElementById("heroBrandWallpaper");
+    if (!wallpaperElem) return;
+
+    if (!brandQuery || String(brandQuery).trim() === "") {
+      wallpaperElem.style.backgroundImage = "none";
+      wallpaperElem.classList.remove("active");
+      return;
+    }
+
+    const queryLower = String(brandQuery).toLowerCase().trim();
+    const sameBrandCans = canCatalog.filter(c => {
+      const b = String(c.brewery || c.Cervejaria || "").toLowerCase().trim();
+      return b === queryLower || b.includes(queryLower);
+    });
+
+    const canWithWallpaper = sameBrandCans.find(c => {
+      const wp = c.brandWallpaper || c.wallpaper || c.BRANDWALLPAPER || c.WALLPAPER;
+      return wp && String(wp).trim() !== "";
+    });
+
+    let wallpaperUrl = "";
+    if (canWithWallpaper) {
+      wallpaperUrl = canWithWallpaper.brandWallpaper || canWithWallpaper.wallpaper || canWithWallpaper.BRANDWALLPAPER || canWithWallpaper.WALLPAPER;
+    } else if (sameBrandCans.length > 0) {
+      wallpaperUrl = sameBrandCans[0].brandLogo || sameBrandCans[0].BRAND_LOGO || sameBrandCans[0].ImgCover || sameBrandCans[0].cover;
+    }
+
+    if (wallpaperUrl && String(wallpaperUrl).trim() !== "") {
+      const fullImgUrl = getOptimizedImageUrl(wallpaperUrl, 800);
+      wallpaperElem.style.backgroundImage = `url('${fullImgUrl}')`;
+      wallpaperElem.classList.add("active");
+    } else {
+      wallpaperElem.style.backgroundImage = "none";
+      wallpaperElem.classList.remove("active");
+    }
   }
 
   function renderApp() {
