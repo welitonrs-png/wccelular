@@ -2,24 +2,26 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>WCCollection - Mobile SPA</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; outline: none; }
     
-    body { background-color: #282A2D; color: #DDDDDD; height: 100vh; overflow: hidden; display: flex; flex-direction: column; user-select: none; }
-
-    /* FORÇAR ORIENTAÇÃO VERTICAL SE O CELULAR FOR GIRADO */
-    @media (orientation: landscape) {
-      body {
-        transform: rotate(-90deg);
-        transform-origin: left top;
-        width: 100vh;
-        height: 100vw;
-        position: absolute;
-        top: 100%;
-        left: 0;
-      }
+    /* TRAVA DEFINITIVA NA VERTICAL */
+    html, body { 
+      background-color: #282A2D; 
+      color: #DDDDDD; 
+      width: 100vw !important; 
+      height: 100vh !important; 
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      overflow: hidden !important; 
+      display: flex; 
+      flex-direction: column; 
+      user-select: none;
+      position: fixed;
+      top: 0;
+      left: 0;
     }
 
     .app-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; background-color: #282A2D; overflow: hidden; }
@@ -424,7 +426,6 @@
     document.getElementById("heroPhoto3").src = photo3;
     document.getElementById("heroPhoto4").src = photo4;
 
-    // ATUALIZAÇÃO DO WALLPAPER NO FUNDO DO HERO
     updateBrandWallpaper(can.brewery || can.Cervejaria);
 
     zoomGallery = [
@@ -435,7 +436,6 @@
     ].filter(Boolean);
   }
 
-  /* FUNÇÃO PARA BUSCAR E ATUALIZAR O WALLPAPER DA CERVEJARIA */
   function updateBrandWallpaper(brandQuery) {
     const wallpaperElem = document.getElementById("heroBrandWallpaper");
     if (!wallpaperElem) return;
