@@ -90,7 +90,18 @@
     .brand-btn:active, .brand-btn:hover { color: #ffffff; background: rgba(255,255,255,0.1); }
 
     .menu-search-box { width: 100%; padding: 8px; background: #11141d; border: 1px solid #333d52; border-radius: 6px; color: #fff; font-size: 0.8rem; text-transform: uppercase; margin-top: 2px; }
-
+    
+    .sort-dropdown {
+      background: rgba(31, 35, 45, 0.9);
+      color: #f39c12;
+      border: 1px solid rgba(243, 156, 18, 0.3);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      outline: none;
+      cursor: pointer;
+    }
     /* ESTRUTURA PRINCIPAL COM HERO FIXO */
     .main-area { flex: 1; display: flex; flex-direction: column; height: calc(100vh - 51px); overflow: hidden; }
 
@@ -229,8 +240,13 @@
         </div>
       </section>
 
-      <div class="counter-bar">
-        <button class="sort-icon-btn" id="sortOrderBtn" onclick="toggleSortOrder()">▼ ORDENAR</button>
+<div class="counter-bar">
+        <select id="sortSelect" class="sort-dropdown" onchange="handleSortChange(this.value)">
+          <option value="newest">▼ MAIS RECENTES</option>
+          <option value="oldest">▲ MAIS ANTIGOS</option>
+          <option value="az">A ➔ Z (NOME/MARCA)</option>
+          <option value="za">Z ➔ A (NOME/MARCA)</option>
+        </select>
         <div class="card-counter" id="cardCounter">0/0</div>
       </div>
 
@@ -247,16 +263,16 @@
     <img id="zoomImage" src="">
   </div>
 
-<script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbwP4kTpSrGJllmlWjQp1YmD1Th5jiw1oUtX5cAJAZj9txy-eNi6_EYyLPG_Q0_coyT9/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwP4kTpSrGJllmlWjQp1YmD1Th5jiw1oUtX5cAJAZj9txy-eNi6_EYyLPG_Q0_coyT9/exec";
   let canCatalog = [];
   let currentFiltered = [];
   let zoomGallery = [];
   let currentZoomIndex = 0;
-  let sortNewestFirst = true;
+  let currentSortMode = 'newest'; // 'newest', 'oldest', 'az', 'za'
   let currentTab = 'home';
   let activeIndex = 0;
 
+  /* 1. TRAVA DE ROTAÇÃO VERTICAL (PORTRAIT) */
   function enforcePortraitOrientation() {
     if (window.innerWidth > window.innerHeight) {
       document.body.classList.add("force-portrait");
@@ -268,6 +284,7 @@
   window.addEventListener("resize", enforcePortraitOrientation);
   window.addEventListener("orientationchange", enforcePortraitOrientation);
 
+  /* UTILITÁRIOS DE MÍDIA E TEXTO */
   function fixDriveUrl(url) {
     if (!url) return '';
     const str = String(url).trim();
@@ -356,6 +373,7 @@
     if (screen) screen.classList.add("hidden");
   }
 
+  /* REQUISIÇÃO E CACHE DE DADOS */
   async function fetchCatalogFromSheet() {
     const cachedData = localStorage.getItem("beercan_catalog_cache");
     if (cachedData) {
@@ -382,6 +400,7 @@
     }
   }
 
+  /* MONTAGEM DO MENU DE MARCAS */
   function buildBrandList() {
     const brandContainer = document.getElementById("brandInlineList");
     if (!brandContainer) return;
@@ -410,8 +429,9 @@
     processTabChange();
   }
 
-  function toggleSortOrder() {
-    sortNewestFirst = !sortNewestFirst;
+  /* LÓGICA DE ORDENAÇÃO */
+  function handleSortChange(value) {
+    currentSortMode = value;
     const searchVal = document.getElementById("mobileSearchInput").value;
     filterCatalog(searchVal);
   }
@@ -438,7 +458,30 @@
     } else if (currentTab === 'sets') {
       list = canCatalog.filter(can => can.isSet === true || String(can.isSet).toLowerCase() === "true");
     }
-    return sortNewestFirst && currentTab !== 'ococ' ? [...list].reverse() : list;
+
+    return applySorting(list);
+  }
+
+  function applySorting(list) {
+    const copy = [...list];
+    if (currentSortMode === 'newest') {
+      return copy.reverse();
+    } else if (currentSortMode === 'oldest') {
+      return copy;
+    } else if (currentSortMode === 'az') {
+      return copy.sort((a, b) => {
+        const nameA = String(a.brewery || a.Cervejaria || a.name || a.Nome || "").toLowerCase();
+        const nameB = String(b.brewery || b.Cervejaria || b.name || b.Nome || "").toLowerCase();
+        return nameA.localeCompare(nameB, 'pt-BR');
+      });
+    } else if (currentSortMode === 'za') {
+      return copy.sort((a, b) => {
+        const nameA = String(a.brewery || a.Cervejaria || a.name || a.Nome || "").toLowerCase();
+        const nameB = String(b.brewery || b.Cervejaria || b.name || b.Nome || "").toLowerCase();
+        return nameB.localeCompare(nameA, 'pt-BR');
+      });
+    }
+    return copy;
   }
 
   function filterCatalog(query) {
@@ -450,6 +493,7 @@
     if(currentFiltered.length > 0) selectCard(0);
   }
 
+  /* EVENTOS DO MENU DESLIZANTE */
   function toggleMenuMobile(e) {
     if(e) e.stopPropagation();
     document.getElementById("sidebarDrawer").classList.toggle("open");
@@ -482,6 +526,7 @@
     }
   }
 
+  /* ATUALIZAÇÃO DO CARROSSEL SUPERIOR (HERO PANEL) */
   function updateHeroPanel(can) {
     document.getElementById("heroTitle").innerText = formatCapitalizedText(can.name || can.Nome || "Selecione uma lata");
     document.getElementById("heroCountry").innerText = formatCapitalizedText(can.country || can.Pais || "-");
@@ -489,6 +534,7 @@
     document.getElementById("heroYear").innerText = can.year || can.Ano || "-";
     document.getElementById("heroBarcode").innerText = can.barcode || can.Barcode || "-";
 
+    // Herança da descrição brandDesc da cervejaria
     let brandDescVal = can.brandDesc || can.descricao || can.DESCRICAO || "";
     if (!brandDescVal && (can.brewery || can.Cervejaria)) {
       const brandKey = String(can.brewery || can.Cervejaria).toLowerCase().trim();
@@ -503,6 +549,7 @@
     }
     document.getElementById("heroBrandDescription").innerText = brandDescVal || "";
 
+    // Mapeamento exato das 4 fotos
     const photo1 = getOptimizedImageUrl(can.ImgFront || can.front || can.ImgCover || "", 300);
     const photo2 = getOptimizedImageUrl(can.ImgLeft || can.left || "", 300);
     const photo3 = getOptimizedImageUrl(can.ImgBack || can.back || "", 300);
@@ -561,6 +608,7 @@
     }
   }
 
+  /* RENDERIZAÇÃO DA GRADE DE CARDS */
   function renderApp() {
     const row = document.getElementById("cardRow");
     if (!row) return;
@@ -579,6 +627,7 @@
       const countryFormatted = formatCapitalizedText(countryRaw);
       const flagUrl = getFlagUrlByCountry(countryRaw);
 
+      // Herança da Cor da Marca
       let cardColor = can.brandColor || can.brandcolor || can.BRANDCOLOR || can.corMarca || "";
 
       if (!cardColor && (can.brewery || can.Cervejaria)) {
@@ -616,7 +665,7 @@
     });
   }
 
-  /* NAVEGAÇÃO TOUCH E PINCH-TO-ZOOM NO LIGHTBOX */
+  /* CONTROLE TOUCH E PINCH-TO-ZOOM NO LIGHTBOX */
   let zoomScale = 1;
   let startDistance = 0;
   let initialScale = 1;
@@ -717,6 +766,3 @@
     enforcePortraitOrientation();
     fetchCatalogFromSheet();
   };
-</script>
-</body>
-</html>
