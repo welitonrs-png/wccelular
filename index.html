@@ -257,7 +257,6 @@
   let currentTab = 'home';
   let activeIndex = 0;
 
-  /* 1. VERIFICAÇÃO E BLOQUEIO DE ROTAÇÃO NO JS */
   function enforcePortraitOrientation() {
     if (window.innerWidth > window.innerHeight) {
       document.body.classList.add("force-portrait");
@@ -490,7 +489,6 @@
     document.getElementById("heroYear").innerText = can.year || can.Ano || "-";
     document.getElementById("heroBarcode").innerText = can.barcode || can.Barcode || "-";
 
-    /* 2. CORREÇÃO DA HERANÇA DE BRANDDESC / DESCRICAO DA CERVEJARIA */
     let brandDescVal = can.brandDesc || can.descricao || can.DESCRICAO || "";
     if (!brandDescVal && (can.brewery || can.Cervejaria)) {
       const brandKey = String(can.brewery || can.Cervejaria).toLowerCase().trim();
@@ -581,13 +579,29 @@
       const countryFormatted = formatCapitalizedText(countryRaw);
       const flagUrl = getFlagUrlByCountry(countryRaw);
 
+      let cardColor = can.brandColor || can.brandcolor || can.BRANDCOLOR || can.corMarca || "";
+
+      if (!cardColor && (can.brewery || can.Cervejaria)) {
+        const brandKey = String(can.brewery || can.Cervejaria).toLowerCase().trim();
+        const parentCan = canCatalog.find(c => {
+          const b = String(c.brewery || c.Cervejaria || "").toLowerCase().trim();
+          const color = c.brandColor || c.brandcolor || c.BRANDCOLOR || c.corMarca;
+          return b === brandKey && color && String(color).trim() !== "";
+        });
+        if (parentCan) {
+          cardColor = parentCan.brandColor || parentCan.brandcolor || parentCan.BRANDCOLOR || parentCan.corMarca;
+        }
+      }
+
+      const finalBgColor = cardColor && String(cardColor).trim() !== "" ? cardColor : "#008234";
+
       const card = document.createElement("div");
       card.className = "card";
       card.onclick = () => selectCard(index);
 
       card.innerHTML = `
         <div class="card-top-photo"><img src="${frontImg}" loading="lazy"></div>
-        <div class="card-bottom-bar" style="background-color: ${can.brandColor || '#008234'};">
+        <div class="card-bottom-bar" style="background-color: ${finalBgColor} !important;">
           <div class="card-bar-title">${brandFormatted}</div>
           <div class="card-bar-details">
             <div class="card-bar-country">
