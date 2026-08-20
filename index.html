@@ -508,15 +508,29 @@
     }
     return copy;
   }
-
   function filterCatalog(query) {
     const val = query ? query.toLowerCase().trim() : "";
     const baseList = getBaseListForCurrentTab();
-    currentFiltered = baseList.filter(can => !val || String(can.brewery || can.Cervejaria || "").toLowerCase().includes(val));
+    
+    currentFiltered = baseList.filter(can => {
+      if (!val) return true;
+      
+      const name = String(can.name || can.Nome || "").toLowerCase();
+      const brewery = String(can.brewery || can.Cervejaria || "").toLowerCase();
+      const country = String(can.country || can.Pais || "").toLowerCase();
+      const barcode = String(can.barcode || can.Barcode || "").toLowerCase();
+
+      return name.includes(val) || 
+             brewery.includes(val) || 
+             country.includes(val) || 
+             barcode.includes(val);
+    });
+
     activeIndex = 0;
     renderApp();
-    if(currentFiltered.length > 0) selectCard(0);
+    if (currentFiltered.length > 0) selectCard(0);
   }
+
 
   /* EVENTOS DO MENU DESLIZANTE */
   function toggleMenuMobile(e) {
