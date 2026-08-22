@@ -175,10 +175,18 @@
     .card-top-photo { width: 100% !important; height: 123px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
     .card-top-photo img { max-width: 100% !important; max-height: 100% !important; object-fit: contain !important; }
 
-    /* PARTE INFERIOR REDUZIDA EM ~15% */
-    .card-bottom-bar { width: 100% !important; height: 37px !important; padding: 2px 4px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
+    /* ESTILO OPÇÃO 2: PILL / TAG FLUTUANTE (ALINHAMENTOS E CORES ATUALIZADOS) */
+    .card-bottom-bar { 
+      width: 100% !important; 
+      height: 37px !important; 
+      padding: 3px 4px !important; 
+      display: flex !important; 
+      flex-direction: column !important; 
+      justify-content: space-between !important; 
+      background: #1a1f2c !important;
+      box-sizing: border-box !important;
+    }
     
-    /* TEXTOS PADRÃO EM CINZA QUANDO NÃO SELECIONADOS */
     .card-bar-title { 
       font-size: 0.60rem !important; 
       font-weight: 700 !important; 
@@ -186,9 +194,15 @@
       white-space: nowrap !important; 
       overflow: hidden !important; 
       text-overflow: ellipsis !important; 
+      padding-left: 2px !important; /* Alinha a margem da marca com a bandeira */
     }
 
-    .card-bar-details { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
+    .card-bar-details { 
+      display: flex !important; 
+      justify-content: space-between !important; 
+      align-items: center !important; 
+      width: 100% !important; 
+    }
 
     .card-bar-country { 
       display: flex !important; 
@@ -196,17 +210,41 @@
       gap: 3px !important; 
       font-size: 0.50rem !important; 
       color: #888888 !important; 
-      white-space: nowrap; 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
+      background: #282a2d !important;
+      padding: 1px 4px 1px 2px !important; /* Reduz padding esquerdo para colar a bandeira */
+      border-radius: 8px !important;
+      white-space: nowrap !important; 
+      overflow: hidden !important; 
+      text-overflow: ellipsis !important; 
+      max-width: 70% !important;
     }
 
     .card-bar-country span {
       color: #888888 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
     }
 
-    .card-bar-flag { width: 11px !important; height: 7px !important; object-fit: cover !important; border-radius: 1px !important; flex-shrink: 0 !important; }
-    .card-bar-vol { background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important; padding: 1px 3px !important; border-radius: 3px !important; font-size: 0.48rem !important; flex-shrink: 0; }
+    .card-bar-flag { 
+      width: 11px !important; 
+      height: 7px !important; 
+      object-fit: cover !important; 
+      border-radius: 1px !important; 
+      flex-shrink: 0 !important; 
+    }
+
+    .card-bar-vol { 
+      background: #282a2d !important; 
+      color: #888888 !important; 
+      padding: 1px 4px !important; 
+      border-radius: 8px !important; 
+      font-size: 0.48rem !important; 
+      font-weight: 600 !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important; 
+      margin-left: auto !important; /* Encosta o volume no lado direito */
+    }
 
     /* ESTADO SELECIONADO / FOCADO / HOVER NO MOBILE (BORDA E RODAPÉ CINZA) */
     .card.focused, 
@@ -225,7 +263,7 @@
       background-color: #888888 !important; 
     }
 
-    /* FORÇA TODOS OS TEXTOS INTERNOS A FICAREM BRANCOS NO FOCO/SELEÇÃO */
+    /* FORÇA TODOS OS TEXTOS INTERNOS E PILLS A FICAREM BRANCOS NO FOCO/SELEÇÃO */
     .card.focused .card-bar-title,
     .card:focus .card-bar-title,
     .card:hover .card-bar-title,
@@ -239,6 +277,7 @@
     .card:focus .card-bar-vol,
     .card:hover .card-bar-vol {
       color: #ffffff !important;
+      background: transparent !important;
     }
 
     /* CONFIGURAÇÃO SETS AJUSTADA PROPORCIONALMENTE */
@@ -720,29 +759,13 @@
       const countryFormatted = formatCapitalizedText(countryRaw);
       const flagUrl = getFlagUrlByCountry(countryRaw);
 
-      let cardColor = can.brandColor || can.brandcolor || can.BRANDCOLOR || can.corMarca || "";
-
-      if (!cardColor && (can.brewery || can.Cervejaria)) {
-        const brandKey = String(can.brewery || can.Cervejaria).toLowerCase().trim();
-        const parentCan = canCatalog.find(c => {
-          const b = String(c.brewery || c.Cervejaria || "").toLowerCase().trim();
-          const color = c.brandColor || c.brandcolor || c.BRANDCOLOR || c.corMarca;
-          return b === brandKey && color && String(color).trim() !== "";
-        });
-        if (parentCan) {
-          cardColor = parentCan.brandColor || parentCan.brandcolor || parentCan.BRANDCOLOR || parentCan.corMarca;
-        }
-      }
-
-      const finalBgColor = cardColor && String(cardColor).trim() !== "" ? cardColor : "#008234";
-
       const card = document.createElement("div");
       card.className = "card";
       card.onclick = () => selectCard(index);
 
       card.innerHTML = `
         <div class="card-top-photo"><img src="${frontImg}" loading="lazy"></div>
-        <div class="card-bottom-bar" style="background-color: ${finalBgColor};">
+        <div class="card-bottom-bar">
           <div class="card-bar-title">${brandFormatted}</div>
           <div class="card-bar-details">
             <div class="card-bar-country">
