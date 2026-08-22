@@ -106,7 +106,7 @@
     /* ESTRUTURA PRINCIPAL COM HERO FIXO */
     .main-area { flex: 1; display: flex; flex-direction: column; height: calc(100vh - 51px); overflow: hidden; }
 
-/* BLOCO HERO AJUSTADO PARA MAIOR CAPACIDADE DE TEXTO */
+    /* BLOCO HERO AJUSTADO PARA MAIOR CAPACIDADE DE TEXTO */
     .hero-panel { 
       background: rgba(22, 27, 38, 0.95); 
       border-bottom: 1px solid rgba(255,255,255,0.1); 
@@ -118,7 +118,7 @@
       z-index: 100;
       position: relative; 
       overflow: hidden;
-      max-height: 48vh; /* Permite expansão do hero ocupando até 48% da altura da tela */
+      max-height: 48vh;
     }
 
     .hero-brand-wallpaper {
@@ -143,16 +143,15 @@
     .info-label { font-size: 0.75rem; font-weight: 700; color: #8c8c8c; }
     .info-value { font-size: 0.85rem; font-weight: bold; font-style: italic; color: #e2e8f0; text-transform: uppercase; }
     
-    /* SUPORTE PARA ATÉ 7 LINHAS NA DESCRIÇÃO */
     .hero-brand-desc { 
       margin-top: 4px; 
       font-size: 0.75rem; 
       line-height: 1.25; 
       color: #cbd5e1; 
       display: -webkit-box; 
-      -webkit-line-clamp: 7; /* Aumentado de 2 para 7 linhas */
+      -webkit-line-clamp: 7; 
       -webkit-box-orient: vertical; 
-      overflow-y: auto; /* Permite rolagem se a descrição for ainda maior que 7 linhas */
+      overflow-y: auto; 
       padding-right: 4px;
     }
     .counter-bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; background: #1f232d; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
@@ -167,12 +166,44 @@
       gap: 10px; width: 100%; 
     }
 
-.card {
+    .card {
       width: 100% !important; height: 160px !important; background: #ffffff !important;
       border-radius: 8px !important; overflow: hidden !important; display: flex !important;
       flex-direction: column !important; border: 2px solid transparent !important; cursor: pointer !important;
     }
-    .card.focused { border-color: #f39c12 !important; box-shadow: 0 0 10px rgba(243, 156, 18, 0.5) !important; }
+
+    /* ESTADO SELECIONADO / FOCADO / HOVER NO MOBILE (BORDA E RODAPÉ CINZA) */
+    .card.focused, 
+    .card:focus, 
+    .card:hover { 
+      border: 2px solid #888888 !important; 
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4) !important; 
+      z-index: 10 !important;
+      outline: none !important;
+    }
+
+    /* FORÇA A BARRA INFERIOR A FICAR CINZA AO SELECIONAR OU PASSAR O MOUSE */
+    .card.focused .card-bottom-bar, 
+    .card:focus .card-bottom-bar, 
+    .card:hover .card-bottom-bar { 
+      background-color: #888888 !important; 
+    }
+
+    /* FORÇA TODOS OS TEXTOS INTERNOS A FICAREM BRANCOS NO FOCO */
+    .card.focused .card-bar-title,
+    .card:focus .card-bar-title,
+    .card:hover .card-bar-title,
+    .card.focused .card-bar-country,
+    .card:focus .card-bar-country,
+    .card:hover .card-bar-country,
+    .card.focused .card-bar-country span,
+    .card:focus .card-bar-country span,
+    .card:hover .card-bar-country span,
+    .card.focused .card-bar-vol,
+    .card:focus .card-bar-vol,
+    .card:hover .card-bar-vol {
+      color: #ffffff !important;
+    }
 
     .card-top-photo { width: 100% !important; height: 123px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
     .card-top-photo img { max-width: 100% !important; max-height: 100% !important; object-fit: contain !important; }
@@ -508,6 +539,7 @@
     }
     return copy;
   }
+
   function filterCatalog(query) {
     const val = query ? query.toLowerCase().trim() : "";
     const baseList = getBaseListForCurrentTab();
@@ -530,7 +562,6 @@
     renderApp();
     if (currentFiltered.length > 0) selectCard(0);
   }
-
 
   /* EVENTOS DO MENU DESLIZANTE */
   function toggleMenuMobile(e) {
@@ -686,7 +717,7 @@
 
       card.innerHTML = `
         <div class="card-top-photo"><img src="${frontImg}" loading="lazy"></div>
-        <div class="card-bottom-bar" style="background-color: ${finalBgColor} !important;">
+        <div class="card-bottom-bar" style="background-color: ${finalBgColor};">
           <div class="card-bar-title">${brandFormatted}</div>
           <div class="card-bar-details">
             <div class="card-bar-country">
@@ -801,7 +832,7 @@
   window.onload = () => {
     enforcePortraitOrientation();
     fetchCatalogFromSheet();
-    setTimeout(hideLoadingScreen, 8000); // Trava de segurança para desativar a splash screen em no máximo 8 segundos
+    setTimeout(hideLoadingScreen, 8000);
   };
 </script>
 </body>
