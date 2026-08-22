@@ -172,6 +172,42 @@
       flex-direction: column !important; border: 2px solid transparent !important; cursor: pointer !important;
     }
 
+    .card-top-photo { width: 100% !important; height: 123px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
+    .card-top-photo img { max-width: 100% !important; max-height: 100% !important; object-fit: contain !important; }
+
+    /* PARTE INFERIOR REDUZIDA EM ~15% */
+    .card-bottom-bar { width: 100% !important; height: 37px !important; padding: 2px 4px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
+    
+    /* TEXTOS PADRÃO EM CINZA QUANDO NÃO SELECIONADOS */
+    .card-bar-title { 
+      font-size: 0.60rem !important; 
+      font-weight: 700 !important; 
+      color: #888888 !important; 
+      white-space: nowrap !important; 
+      overflow: hidden !important; 
+      text-overflow: ellipsis !important; 
+    }
+
+    .card-bar-details { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
+
+    .card-bar-country { 
+      display: flex !important; 
+      align-items: center !important; 
+      gap: 3px !important; 
+      font-size: 0.50rem !important; 
+      color: #888888 !important; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+    }
+
+    .card-bar-country span {
+      color: #888888 !important;
+    }
+
+    .card-bar-flag { width: 11px !important; height: 7px !important; object-fit: cover !important; border-radius: 1px !important; flex-shrink: 0 !important; }
+    .card-bar-vol { background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important; padding: 1px 3px !important; border-radius: 3px !important; font-size: 0.48rem !important; flex-shrink: 0; }
+
     /* ESTADO SELECIONADO / FOCADO / HOVER NO MOBILE (BORDA E RODAPÉ CINZA) */
     .card.focused, 
     .card:focus, 
@@ -189,7 +225,7 @@
       background-color: #888888 !important; 
     }
 
-    /* FORÇA TODOS OS TEXTOS INTERNOS A FICAREM BRANCOS NO FOCO */
+    /* FORÇA TODOS OS TEXTOS INTERNOS A FICAREM BRANCOS NO FOCO/SELEÇÃO */
     .card.focused .card-bar-title,
     .card:focus .card-bar-title,
     .card:hover .card-bar-title,
@@ -204,17 +240,6 @@
     .card:hover .card-bar-vol {
       color: #ffffff !important;
     }
-
-    .card-top-photo { width: 100% !important; height: 123px !important; background: #ffffff !important; display: flex !important; justify-content: center !important; align-items: center !important; padding: 2px !important; }
-    .card-top-photo img { max-width: 100% !important; max-height: 100% !important; object-fit: contain !important; }
-
-    /* PARTE INFERIOR REDUZIDA EM ~15% */
-    .card-bottom-bar { width: 100% !important; height: 37px !important; padding: 2px 4px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
-    .card-bar-title { font-size: 0.60rem !important; font-weight: 700 !important; color: #ffffff !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-    .card-bar-details { display: flex !important; justify-content: space-between !important; align-items: center !important; width: 100% !important; }
-    .card-bar-country { display: flex !important; align-items: center !important; gap: 3px !important; font-size: 0.50rem !important; color: #ffffff !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .card-bar-flag { width: 11px !important; height: 7px !important; object-fit: cover !important; border-radius: 1px !important; flex-shrink: 0 !important; }
-    .card-bar-vol { background: rgba(0, 0, 0, 0.45) !important; color: #ffffff !important; padding: 1px 3px !important; border-radius: 3px !important; font-size: 0.48rem !important; flex-shrink: 0; }
 
     /* CONFIGURAÇÃO SETS AJUSTADA PROPORCIONALMENTE */
     .card-row.sets-grid { grid-template-columns: repeat(2, 1fr) !important; }
