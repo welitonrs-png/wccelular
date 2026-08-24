@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -314,14 +313,14 @@
 
     /* ESTADO SELECIONADO / FOCADO / HOVER NO MOBILE */
     .card.focused, .card:focus {
-  border: 2px solid transparent !important;
-  background-image: linear-gradient(#ffffff, #ffffff), 
-                    linear-gradient(135deg, #ffe066, #f39c12, #ff5500) !important;
-  background-origin: border-box !important;
-  background-clip: content-box, border-box !important;
-  box-shadow: 0 8px 10px rgba(243, 156, 18, 0.5) !important;
-  z-index: 10 !important;
-}
+      border: 2px solid transparent !important;
+      background-image: linear-gradient(#ffffff, #ffffff), 
+                        linear-gradient(135deg, #ffe066, #f39c12, #ff5500) !important;
+      background-origin: border-box !important;
+      background-clip: content-box, border-box !important;
+      box-shadow: 0 8px 10px rgba(243, 156, 18, 0.5) !important;
+      z-index: 10 !important;
+    }
 
     /* FORÇA A BARRA INFERIOR A FICAR CINZA NO FOCO */
     .card.focused .card-bottom-bar, 
@@ -329,8 +328,6 @@
     .card:hover .card-bottom-bar {
       background-color: #F19711 !important;
     }
-
-
 
     .card.focused .card-bar-title,
     .card:focus .card-bar-title,
@@ -766,12 +763,11 @@
 
     updateBrandWallpaper(can.brewery || can.Cervejaria);
 
-    zoomGallery = [
-      can.ImgFront || can.front || can.ImgCover,
-      can.ImgLeft || can.left,
-      can.ImgBack || can.back,
-      can.ImgRight || can.right
-    ].filter(Boolean);
+    let rawPhotos = [];
+    if (can.images) rawPhotos = [can.images.front, can.images.left, can.images.back, can.images.right, can.images.top, can.images.bottom].filter(Boolean);
+    if (rawPhotos.length === 0) rawPhotos = [can.ImgFront || can.front || can.ImgCover, can.ImgLeft || can.left, can.ImgBack || can.back, can.ImgRight || can.right, can.ImgTop || can.top || can.tampa, can.ImgBottom || can.bottom || can.fundo].filter(Boolean);
+    
+    zoomGallery = rawPhotos;
   }
 
   function updateBrandWallpaper(brandQuery) {
